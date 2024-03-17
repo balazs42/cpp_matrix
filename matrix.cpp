@@ -183,6 +183,56 @@ void Matrix<numericalType>::addRow(const size_t& row, vector<numericalType> rowT
 }
 
 template<typename numericalType>
+numericalType* Matrix<numericalType>::subtractRow(numericalType* subFrom, const size_t& size1, numericalType* subThis, const size_t& size2) const
+{
+	if (size1 != size2)
+		throw std::runtime_error("Cannot subtract rows which are not the same size!");
+
+	numericalType* retRow = new numericalType[size1];
+	for (unsigned i = 0; i < size1; i++)
+		retRow[i] = subFrom[i] - subThis[i];
+
+	return retRow;
+}
+
+template<typename numericalType>
+numericalType* Matrix<numericalType>::subtractRow(const vector<numericalType>& subFrom, const vector<numericalType>& subThis) const
+{
+	size_t size1 = subFrom.size();
+	size_t size2 = subThis.size();
+
+	numericalType* sf = new numericalType[size1];
+	numericalType* st = new numericalType[size2];
+
+	numericalType* retVec = subtractRow(sf, size1, st, size2);
+	delete[] sf;
+	delete[] st;
+	return retVec;
+}
+
+template<typename numericalType>
+vector<numericalType> Matrix<numericalType>::subtractRowVector(numericalType* subFrom, const size_t& size1, numericalType* subThis, const size_t& size2) const
+{
+	numericalType* rv = subtractRow(subFrom, size1, subThis, size2);
+	vector<numericalType> retVec;
+	for (unsigned i = 0; i < size1; i++)
+		retVec.push_back(rv[i]);
+	delete[] rv;
+	return retVec;
+}
+
+template<typename numericalType>
+vector<numericalType> Matrix<numericalType>::subtractRowVector(const vector<numericalType>& subFrom, const vector<numericalType>& subThis) const
+{
+	numericalType* rv = subtractRow(subFrom, subThis);
+	vector<numericalType> retVec;
+	for (unsigned i = 0; i < subFrom.size(); i++)
+		retVec.push_back(rv[i]);
+	delete[] rv;
+	return retVec;
+}
+
+template<typename numericalType>
 numericalType Matrix<numericalType>::dotProduct(const size_t& row1, const size_t& row2) const
 {
 	if (row1 >= _row || row2 >= _row)
@@ -272,6 +322,30 @@ numericalType Matrix<numericalType>::rowAbs(const size_t& idx) const
 	// Sum up all the elements squared
 	for (unsigned i = 0; i < _col; i++)
 		abs += matrix[idx][i] * matrix[idx][i];
+
+	return static_cast<numericalType>(std::sqrt(abs));
+}
+
+template<typename numericalType>
+numericalType Matrix<numericalType>::rowAbs(numericalType* row, const size_t& size) const
+{
+	numericalType abs = {};
+
+	// Sum up all the elements squared
+	for (unsigned i = 0; i < _col; i++)
+		abs += row[i] * row[i];
+
+	return static_cast<numericalType>(std::sqrt(abs));
+}
+
+template<typename numericalType>
+numericalType Matrix<numericalType>::rowAbs(vector<numericalType> row) const
+{
+	numericalType abs = {};
+
+	// Sum up all the elements squared
+	for (unsigned i = 0; i < _col; i++)
+		abs += row[i] * row[i];
 
 	return static_cast<numericalType>(std::sqrt(abs));
 }
@@ -1969,7 +2043,7 @@ bool Matrix<numericalType>::isLinearlyIndependent(numericalType* row, const size
 }
 
 template<typename numericalType>
-bool Matrix<numericalType>::isLinearlyIndependent(const vector<numericalType> row, const size_t& rowIdx) const
+bool Matrix<numericalType>::isLinearlyIndependent(const vector<numericalType>& row, const size_t& rowIdx) const
 {
 	if (row.size() != _col)
 		throw std::runtime_error("Cannot determine linear independency of different size vectors!");
@@ -2002,7 +2076,7 @@ bool Matrix<numericalType>::isLinearlyIndependent(numericalType* row1, const siz
 }
 
 template<typename numericalType>
-bool Matrix<numericalType>::isLinearlyIndependent(const vector<numericalType> row1, const vector<numericalType>& row2) const
+bool Matrix<numericalType>::isLinearlyIndependent(const vector<numericalType>& row1, const vector<numericalType>& row2) const
 {
 	if (row1.size() != row2.size())
 		throw std::runtime_error("Cannot determine linear independency of different size vectors!");
@@ -2030,6 +2104,237 @@ bool Matrix<numericalType>::isLinearlyIndependent(const vector<numericalType> ro
 		if (row2[i] / commonDivisor != commonRemainder)	// If r2[i] mod divisor != const 
 			return false;
 	return true;
+}
+
+template<typename numericalType>
+double Matrix<numericalType>::angleBetween(const size_t& row1Idx, const size_t& row2Idx) const
+{
+	return angleBetween(matrix[row1Idx], _col, matrix[row2Idx], _col);
+}
+
+template<typename numericalType>
+double Matrix<numericalType>::angleBetween(numericalType* row, const size_t& size, const size_t& rowIdx) const
+{
+	return angleBetween(row, size, matrix[rowIdx], _col);
+}
+
+template<typename numericalType>
+double Matrix<numericalType>::angleBetween(const vector<numericalType>& row, const size_t& rowIdx) const
+{
+	if(row.size() != _col)
+		throw std::runtime_error("Cannot calculate angle, vectors are not the same size!");
+
+	numericalType* r = new numericalType[_col];
+	for (unsigned i = 0; i < _col; i++)
+		r[i] = row[i];
+
+	double result = angleBetween(r, _col, matrix[rowIdx], _col);
+
+	delete[] r;
+
+	return result;
+}
+
+template<typename numericalType>
+double Matrix<numericalType>::angleBetween(numericalType* row1, const size_t& size1, numericalType* row2, const size_t& size2) const
+{
+	if (size1 != size2)
+		throw std::runtime_error("Cannot calculate angle, vectors are not the same size!");
+
+	double cosTheta = 0.0f;
+
+	// Calculating a*b
+	for (unsigned i = 0; i < size1; i++)
+		cosTheta += static_cast<double>(row1[i] * row2[i]);
+
+	// Calculating ||a||*||b||
+	cosTheta /= (rowAbs(row1, size1) * rowAbs(row2, size2));
+
+	return std::acos(cosTheta);
+}
+
+template<typename numericalType>
+double Matrix<numericalType>::angleBetween(const vector<numericalType>& row1, const vector<numericalType>& row2) const
+{
+	if(row1.size() != row2.size())
+		throw std::runtime_error("Cannot calculate angle, vectors are not the same size!");
+
+	unsigned n = row1.size();
+
+	numericalType* r1 = new numericalType[n];
+	numericalType* r2 = new numericalType[n];
+
+	for (unsigned i = 0; i < n; i++)
+	{
+		r1[i] = row1[i];
+		r2[i] = row2[i];
+	}
+
+	double result = angleBetween(r1, n, r2, n);
+
+	delete[] r1;
+	delete[] r2;
+
+	return result;
+}
+
+template<typename numericalType>
+vector<numericalType> Matrix<numericalType>::projectToVector(const vector<numericalType>& projectThisTo, const vector<numericalType>& toThis) const
+{
+	numericalType* proj = projectTo(projectThisTo, toThis);
+	vector<numericalType> projVec;
+	for (unsigned i = 0; i < toThis.size(); i++)
+		projVec.push_back(proj[i]);
+	delete[] proj;
+	return projVec;
+}
+
+template<typename numericalType>
+vector<numericalType> Matrix<numericalType>::projectToVector(numericalType* projectThisTo, const size_t& size1, numericalType* toThis, const size_t& size2) const
+{
+	numericalType* proj = projectTo(projectThisTo, size1, toThis, size2);
+	vector<numericalType> projVec;
+	for (unsigned i = 0; i < size2; i++)
+		projVec.push_back(proj[i]);
+	delete[] proj;
+	return projVec;
+}
+
+template<typename numericalType>
+numericalType* Matrix<numericalType>::projectTo(const vector<numericalType>& projectThisTo, const vector<numericalType>& toThis) const
+{
+	size_t size1 = projectThisTo.size();
+	size_t size2 = toThis.size();
+
+	if(size1 != size2)
+		throw std::runtime_error("Cannot project vectors of different sizes!");
+
+	numericalType* ptt = new numericalType[size1];
+	numericalType* tt = new numericalType[size2];
+
+	for (unsigned i = 0; i < size1; i++)
+	{
+		ptt[i] = projectThisTo[i];
+		tt[i] = toThis[i];
+	}
+
+	numericalType* retVec = projectTo(ptt, size1, tt, size2);
+
+	delete[] ptt;
+	delete[] tt;
+
+	return retVec;
+}
+
+template<typename numericalType>
+numericalType* Matrix<numericalType>::projectTo(numericalType* projectThisTo, const size_t& size1, numericalType* toThis, const size_t& size2) const
+{
+	if (size1 != size2)
+		throw std::runtime_error("Cannot project vectors of different sizes!");
+
+	// Calculating u*v
+	numericalType upper = 0;
+	for (unsigned i = 0; i < size1; i++)
+		upper += toThis[i] * projectThisTo[i];
+
+	// Calculating u*u
+	numericalType lower = 0;
+	for (unsigned i = 0; i < size1; i++)
+		lower += toThis[i] * toThis[i];
+
+	numericalType scalar = upper / lower;
+	// Calculating (u*v)/(u*u) * u
+	numericalType* projected = new numericalType[size1];
+	for (unsigned i = 0; i < size1; i++)
+		projected[i] = scalar * toThis[i];
+
+	return projected;
+}
+
+template<typename numericalType>
+Matrix<numericalType> Matrix<numericalType>::gramSchmidAlgorithm() const
+{
+	// Create a copy of the matrix to work on
+	Matrix<numericalType> orthoMatrix(*this);
+	size_t numRows = orthoMatrix.row();
+	size_t numCols = orthoMatrix.col();
+
+	// Process each row
+	for (size_t i = 0; i < numRows; ++i) 
+	{
+		vector<numericalType> vi = orthoMatrix.getRowVector(i);
+
+		// Subtract the projection of vi onto all previous rows vj
+		for (size_t j = 0; j < i; ++j) 
+		{
+			vector<numericalType> vj = orthoMatrix.getRowVector(j);
+			vector<numericalType> proj = projectToVector(vi, vj); // ProjectToVector returns the projection of vi onto vj
+			vi = subtractRowVector(vi, proj); // SubtractRowVector subtracts the second vector from the first and returns the result
+		}
+
+		// Normalize the result to make it a unit vector
+		numericalType norm = static_cast<numericalType>(std::sqrt(dotProduct(vi, vi))); // dotProduct calculates the dot product of the vector with itself
+		for (auto& element : vi) 
+			element /= norm;
+
+		// Set the processed row back into the matrix
+		orthoMatrix.setRow(vi, i);
+	}
+
+	return orthoMatrix;
+}
+
+template<typename numericalType>
+Matrix<numericalType> Matrix<numericalType>::leastSquares(const vector<numericalType>& b) const
+{
+	if (b.size() != _row)
+		throw std::runtime_error("Cannot solve least sqaures problem, matrix size doesnt match vector size!");
+
+	size_t n = b.size();
+
+	numericalType* bArr = new numericalType[n];
+	for (unsigned i = 0; i < n; i++)
+		bArr[i] = b[i];
+
+	Matrix<numericalType> sol = leastSquares(bArr, n);
+
+	delete[] bArr;
+
+	return sol;
+}
+
+template<typename numericalType>
+Matrix<numericalType> Matrix<numericalType>::leastSquares(numericalType* b, const size_t& size) const
+{
+	if (size != _row) 
+		throw std::invalid_argument("Size of b must match the number of rows in the matrix.");
+
+	// We want to solve the A^TAx=A^Tb
+
+	// Step 1: Convert the 'b' array into a matrix
+	Matrix<numericalType> B(_row, 1);
+	for (size_t i = 0; i < size; ++i) 
+		B[i][0] = b[i];
+
+	// Step 2: Compute A^T
+	Matrix<numericalType> At = this->transpose();
+
+	// Step 3: Compute A^TA
+	Matrix<numericalType> AtA = At * (*this);
+
+	// Step 4: Compute the inverse of A^TA
+	Matrix<numericalType> AtA_inv = AtA.inverse(); // Assuming inverse() method is implemented and handles singularity
+
+	// Step 5: Compute A^TB
+	Matrix<numericalType> AtB = At * B;
+
+	// Step 6: Compute the pseudoinverse of A: (A^TA)^{-1}A^T
+	Matrix<numericalType> pseudoinverse = AtA_inv * At;
+
+	// Step 7: Compute the least squares solution: x = pseudoinverse * B
+	Matrix<numericalType> x = pseudoinverse * B;
+
+	return x;
 }
 
 template class Matrix<unsigned>;

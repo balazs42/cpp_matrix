@@ -28,11 +28,11 @@ template<typename numericalType>
 class Matrix
 {
 private:
-	numericalType** matrix;
-	size_t _row;
-	size_t _col;
+	numericalType** matrix;	// Represents the matrix
+	size_t _row;			// Number of rows in the matrix
+	size_t _col;			// Number of columns in the matrix
 
-	bool _symmetric;
+	bool _symmetric;		// Wether the matrix is symmetric or not, helps speed up some functions
 public:
 	// Constructors
 	// Default constructor: Initializes an empty matrix.
@@ -404,7 +404,7 @@ public:
 	// - row: Vector representing an external row.
 	// - rowIdx: Index of the row in the matrix.
 	// Returns: True if the matrix row and the external row are linearly independent, false otherwise.
-	bool isLinearlyIndependent(const vector<numericalType> row, const size_t& rowIdx) const;
+	bool isLinearlyIndependent(const vector<numericalType>& row, const size_t& rowIdx) const;
 
 	// isLinearlyIndependent (array version): Checks if two arrays representing vectors are linearly independent.
 	// Parameters:
@@ -420,7 +420,7 @@ public:
 	// - row1: The first vector as a vector of numericalType.
 	// - row2: The second vector as a vector of numericalType.
 	// Returns: True if the vectors are linearly independent, false otherwise.
-	bool isLinearlyIndependent(const vector<numericalType> row1, const vector<numericalType>& row2) const;
+	bool isLinearlyIndependent(const vector<numericalType>& row1, const vector<numericalType>& row2) const;
 
 	// swap: Swaps the contents of two Matrix objects.
 	// This function is a friend of the Matrix class, allowing it to access private members of Matrix objects.
@@ -505,7 +505,41 @@ public:
 	// - rowToSub: The vector to be subtracted.
 	// - howManyTimes: The scalar by which the rowToSub vector is scaled before the subtraction.
 	// Note: Utilizes addRow internally for the operation.
-	void subractRow(const size_t& row, vector<numericalType> rowToSub, const numericalType sign, const numericalType howManyTimes = 1) { addRow(row, rowToSub, -1, howManyTimes); }
+	void subractRow(const size_t& row, vector<numericalType> rowToSub, const numericalType howManyTimes = 1) { addRow(row, rowToSub, -1, howManyTimes); }
+
+	// subtractRow (array version): Subtracts one row from another, both represented as arrays.
+	// Parameters:
+	// - subFrom: The array representing the row from which to subtract.
+	// - size1: The size of the subFrom array.
+	// - subThis: The array representing the row to subtract.
+	// - size2: The size of the subThis array.
+	// Returns: A pointer to a dynamically allocated array of numericalType containing the result of the subtraction.
+	// Note: The caller is responsible for deleting the returned array to avoid memory leaks.
+	numericalType* subtractRow(numericalType* subFrom, const size_t& size1, numericalType* subThis, const size_t& size2) const;
+
+	// subtractRow (vector version): Subtracts one row vector from another.
+	// Parameters:
+	// - subFrom: The vector representing the row from which to subtract.
+	// - subThis: The vector representing the row to subtract.
+	// Returns: A pointer to a dynamically allocated array of numericalType containing the result of the subtraction.
+	// Note: The caller is responsible for deleting the returned array to avoid memory leaks.
+	numericalType* subtractRow(const vector<numericalType>& subFrom, const vector<numericalType>& subThis) const;
+
+	// subtractRowVector (array version): Subtracts one row from another, both represented as arrays, and returns the result as a vector.
+	// Parameters:
+	// - subFrom: The array representing the row from which to subtract.
+	// - size1: The size of the subFrom array.
+	// - subThis: The array representing the row to subtract.
+	// - size2: The size of the subThis array.
+	// Returns: A vector of numericalType containing the result of the subtraction.
+	vector<numericalType> subtractRowVector(numericalType* subFrom, const size_t& size1, numericalType* subThis, const size_t& size2) const;
+
+	// subtractRowVector (vector version): Subtracts one row vector from another and returns the result as a vector.
+	// Parameters:
+	// - subFrom: The vector representing the row from which to subtract.
+	// - subThis: The vector representing the row to subtract.
+	// Returns: A vector of numericalType containing the result of the subtraction.
+	vector<numericalType> subtractRowVector(const vector<numericalType>& subFrom, const vector<numericalType>& subThis) const;
 
 	// dotProduct (row index version): Calculates the dot product between two rows within the matrix.
 	// Parameters:
@@ -550,6 +584,19 @@ public:
 	// - idx: The index of the row.
 	// Returns: The Euclidean norm of the row.
 	numericalType rowAbs(const size_t& idx) const;
+
+	// rowAbs (array version): Calculates the Euclidean norm of a specified row.
+	// Parameters:
+	// - row: The vector that you want to calculate norm of.
+	// - size: Size of the vector
+	// Returns: The Euclidean norm of the row.
+	numericalType rowAbs(numericalType* row, const size_t& size) const;
+
+	// rowAbs (vector version): Calculates the Euclidean norm of a specified row.
+	// Parameters:
+	//  - row: The vector that you want to calculate norm of.
+	// Returns: The Euclidean norm of the row.
+	numericalType rowAbs(vector<numericalType> row) const;
 
 	// colAbs: Calculates the Euclidean norm of a specified column.
 	// Parameters:
@@ -990,6 +1037,99 @@ public:
 	// - D: Reference to a Matrix object to store the diagonal matrix of eigenvalues.
 	// Returns: None. The P and D matrices are output parameters filled by the function.
 	void diagonalize(Matrix<numericalType>& P, Matrix<numericalType>& D) const;
+
+	// angleBetween (row index version): Calculates the angle between two rows within the matrix.
+	// Parameters:
+	// - row1Idx: Index of the first row.
+	// - row2Idx: Index of the second row.
+	// Returns: The angle in radians between the two specified rows as a double.
+	double angleBetween(const size_t& row1Idx, const size_t& row2Idx) const;
+
+	// angleBetween (array and row index version): Calculates the angle between an external row represented as an array and a specific row in the matrix.
+	// Parameters:
+	// - row: Array representing an external row.
+	// - size: The size of the array representing the external row.
+	// - rowIdx: The index of the row within the matrix.
+	// Returns: The angle in radians between the external row and the specified matrix row as a double.
+	double angleBetween(numericalType* row, const size_t& size, const size_t& rowIdx) const;
+
+	// angleBetween (vector and row index version): Calculates the angle between an external row represented as a vector and a specific row in the matrix.
+	// Parameters:
+	// - row: Vector representing an external row.
+	// - rowIdx: The index of the row within the matrix.
+	// Returns: The angle in radians between the external row and the specified matrix row as a double.
+	double angleBetween(const vector<numericalType>& row, const size_t& rowIdx) const;
+
+	// angleBetween (array version): Calculates the angle between two rows represented as arrays.
+	// Parameters:
+	// - row1: Array representing the first row.
+	// - size1: The size of the first array.
+	// - row2: Array representing the second row.
+	// - size2: The size of the second array.
+	// Returns: The angle in radians between the two rows as a double.
+	double angleBetween(numericalType* row1, const size_t& size1, numericalType* row2, const size_t& size2) const;
+
+	// angleBetween (vector version): Calculates the angle between two rows represented as vectors.
+	// Parameters:
+	// - row1: Vector representing the first row.
+	// - row2: Vector representing the second row.
+	// Returns: The angle in radians between the two rows as a double.
+	double angleBetween(const vector<numericalType>& row1,const vector<numericalType>& row2) const;
+
+	// projectToVector (vector version): Projects one vector onto another and returns the projection as a new vector.
+	// Parameters:
+	// - projectThisTo: The vector that is being projected.
+	// - toThis: The vector onto which projectThisTo is projected.
+	// Returns: A vector of numericalType representing the projection of projectThisTo onto toThis.
+	vector<numericalType> projectToVector(const vector<numericalType>& projectThisTo, const vector<numericalType>& toThis) const;
+
+	// projectToVector (array version): Projects one vector represented as an array onto another vector also represented as an array, and returns the projection as a new vector.
+	// Parameters:
+	// - projectThisTo: Array representing the vector that is being projected.
+	// - size1: The size of projectThisTo array.
+	// - toThis: Array representing the vector onto which projectThisTo is projected.
+	// - size2: The size of toThis array.
+	// Returns: A vector of numericalType representing the projection of projectThisTo onto toThis.
+	vector<numericalType> projectToVector(numericalType* projectThisTo, const size_t& size1, numericalType* toThis, const size_t& size2) const;
+
+	// projectTo (vector version): Projects one vector onto another and returns the projection as a new dynamically allocated array.
+	// Parameters:
+	// - projectThisTo: The vector that is being projected.
+	// - toThis: The vector onto which projectThisTo is projected.
+	// Returns: A pointer to a dynamically allocated array of numericalType representing the projection of projectThisTo onto toThis.
+	// Note: The caller is responsible for deleting the returned array to avoid memory leaks.
+	numericalType* projectTo(const vector<numericalType>& projectThisTo, const vector<numericalType>& toThis) const;
+
+	// projectTo (array version): Projects one vector represented as an array onto another vector also represented as an array, and returns the projection as a new dynamically allocated array.
+	// Parameters:
+	// - projectThisTo: Array representing the vector that is being projected.
+	// - size1: The size of projectThisTo array.
+	// - toThis: Array representing the vector onto which projectThisTo is projected.
+	// - size2: The size of toThis array.
+	// Returns: A pointer to a dynamically allocated array of numericalType representing the projection of projectThisTo onto toThis.
+	// Note: The caller is responsible for deleting the returned array to avoid memory leaks.
+	numericalType* projectTo(numericalType* projectThisTo, const size_t& size1, numericalType* toThis, const size_t& size2) const;
+
+	// gramSchmidAlgorithm: Applies the Gram-Schmidt process to the matrix to orthogonalize its rows.
+	// Parameters: None.
+	// Returns: A new Matrix object where the rows are the result of applying the Gram-Schmidt orthogonalization process to the original matrix's rows.
+	Matrix<numericalType> gramSchmidAlgorithm() const;
+
+	// leastSquares (vector version): Solves the least squares problem using the current matrix as the coefficient matrix and a given vector 'b' as the observation vector.
+	// This method is used to find the vector 'x' that minimizes the squared differences between the observed outcomes in 'b' and those predicted by the linear model defined by the matrix.
+	// Parameters:
+	// - b: A vector of numericalType representing the observation or dependent variable values.
+	// Returns: A Matrix object representing the solution vector 'x' that minimizes the equation ||Ax - b||^2, where A is the current matrix.
+	Matrix<numericalType> leastSquares(const vector<numericalType>& b) const;
+
+	// leastSquares (array version): Solves the least squares problem using the current matrix as the coefficient matrix and a given array 'b' as the observation vector.
+	// This method aims to find the vector 'x' that minimizes the squared differences between the observed outcomes in 'b' and those predicted by the linear model defined by the matrix.
+	// Parameters:
+	// - b: A pointer to an array of numericalType representing the observation or dependent variable values.
+	// - size: The size of the array 'b', which should match the number of rows in the matrix for the calculation to be valid.
+	// Returns: A Matrix object representing the solution vector 'x' that minimizes the equation ||Ax - b||^2, where A is the current matrix.
+	// Note: It is the caller's responsibility to ensure that the size of 'b' matches the number of rows in the matrix.
+	Matrix<numericalType> leastSquares(numericalType* b, const size_t& size) const;
 };
 
 #endif /*_MATRIX_HPP*/
