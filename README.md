@@ -2,7 +2,7 @@
 
 Welcome to the GitHub repository of my C++ Matrix Library, a comprehensive, efficient, and easy-to-use library designed for performing a wide range of matrix operations. This library is developed with the intention to provide a solid foundation for any project requiring linear algebra computations, including but not limited to, mathematical modeling, simulations, and data analysis.
 
-In the future i'm planning to make the library Cuda comppatible so GPU paralellization can be done, and also use Open MP for CPU parallelization.
+In the future i'm planning to make the library Cuda comppatible so GPU paralellization can be done, and also use Open MP for CPU parallelization, also i'm planning on adding complex data type, to make the library complex number compatible.
 ## Features
 
 - **Dynamic Matrix Creation**: Create matrices dynamically with any numerical type, supporting operations such as addition, subtraction, multiplication, and more.
