@@ -40,10 +40,10 @@ Matrix<numericalType> Matrix<numericalType>::operator*(const Matrix<numericalTyp
 		throw std::invalid_argument("Matrix dimensions do not match for multiplication.");
 	
 	// Create a result matrix with appropriate size (rows of the first matrix, cols of the second matrix)
-	Matrix<numericalType> result(this->row(), rhs.col());
+	Matrix<numericalType> result(_row, rhs.col());
 
 	// Iterate over each row of the first matrix
-	for (size_t i = 0; i < this->row(); ++i) 
+	for (size_t i = 0; i < _row; ++i) 
 	{
 		// Inside each row of the first matrix, iterate over each column of the second matrix
 		for (size_t j = 0; j < rhs.col(); ++j) 
@@ -53,7 +53,7 @@ Matrix<numericalType> Matrix<numericalType>::operator*(const Matrix<numericalTyp
 
 			// Now, iterate over each element of the current row of the first matrix
 			// and each element of the current column of the second matrix
-			for (size_t k = 0; k < this->col(); ++k) 
+			for (size_t k = 0; k < _col; ++k) 
 			{
 				// Multiply each element of the row by the corresponding element of the column
 				// and add it to the sum. This follows the rule:
@@ -590,7 +590,7 @@ numericalType Matrix<numericalType>::trace() const
 	numericalType sum = {};
 
 	// Summing up all elements in the diagonal of the matrix
-	for (unsigned i = 0; i < _row); i++)
+	for (unsigned i = 0; i < _row; i++)
 		for (unsigned j = 0; j < _col; j++)
 			if (i == j)
 				sum += matrix[i][j];
@@ -871,10 +871,11 @@ Matrix<numericalType> Matrix<numericalType>::gaussJordanElimination() const
 template<typename numericalType>
 Matrix<numericalType> Matrix<numericalType>::kernel() const 
 {
+	// The kernel or nullity of the matrix is the #colvectors - #colvectors with leading 1 in rref form
 	Matrix<numericalType> rrefMatrix = gaussJordanElimination();
 
-	size_t rowCount = this->row();
-	size_t colCount = this->col();
+	size_t rowCount = _row;
+	size_t colCount = _col;
 
 	Matrix<numericalType> basis(_row, _col);
 
@@ -884,9 +885,8 @@ Matrix<numericalType> Matrix<numericalType>::kernel() const
 		bool isFreeVariable = true;
 		for (size_t row = 0; row < rowCount && isFreeVariable; ++row) 
 		{
-			if (rrefMatrix[row][col] == 1) { // This column has a leading 1, so it's not a free variable
+			if (rrefMatrix[row][col] == 1)  // This column has a leading 1, so it's not a free variable
 				isFreeVariable = false;
-			}
 		}
 		if (isFreeVariable) 
 		{
@@ -941,10 +941,13 @@ Matrix<numericalType> Matrix<numericalType>::image() const
 template<typename numericalType>
 unsigned Matrix<numericalType>::rank() const 
 {
+	// The rank of the matrix is the dimension of the columnspace which
+	// is equal to the dimension of the rowspace of the matrix
+	// which translates: rank = rank(A) = rank(A^T) = dim(col(A)) = dim(row(A))
 	unsigned r = 0;
 
 	// Get the rref form of the matrix
-	Matrix<numericalType> rrefM = this->gaussJordanElimination();
+	Matrix<numericalType> rrefM = gaussJordanElimination();
 
 	for (unsigned i = 0; i < _row; i++)
 	{
@@ -2346,6 +2349,191 @@ Matrix<numericalType> Matrix<numericalType>::leastSquares(numericalType* b, cons
 
 	return x;
 }
+
+template<typename numericalType>
+numericalType Matrix<numericalType>::mean() const
+{
+	if (_col == 0 || _row == 0)
+		throw std::runtime_error("Cannot calulate mean for matrix with 0 dimesnsions!");
+
+	numericalType _mean = {};
+	for (unsigned i = 0; i < _row; i++)
+		_mean += meanRow(i);
+
+	return _mean / _row;
+}
+
+template<typename numericalType>
+numericalType Matrix<numericalType>::meanRow(const size_t& rowIdx) const
+{
+	if (rowIdx > _row)
+		throw std::runtime_error("Cannot calulate mean for row, since index is out of bounds!");
+
+	if (_row == 0)
+		throw std::runtime_error("Cannot calculate mean, if row dimension is 0.");
+
+	numericalType mean = {};
+
+	for (unsigned i = 0; i < _col; i++)
+		mean += matrix[rowIdx][i];
+
+	return mean / _col;
+}
+
+template<typename numericalType>
+numericalType Matrix<numericalType>::meanCol(const size_t& colIdx) const
+{
+	if (colIdx > _col)
+		throw std::runtime_error("Cannot calulate mean for col, since index is out of bounds!");
+
+	if (_col == 0)
+		throw std::runtime_error("Cannot calculate mean, if row dimension is 0.");
+
+	numericalType mean = {};
+
+	for (unsigned i = 0; i < _row; i++)
+		mean += matrix[i][colIdx];
+
+	return mean / _row;
+}
+
+template<typename numericalType>
+numericalType Matrix<numericalType>::max() const
+{
+	numericalType _max = std::numeric_limits<numericalType>::min();
+	for (unsigned i = 0; i < _row; i++)
+		for (unsigned j = 0; j < _col; j++)
+			if (_max < matrix[i][j])
+				_max = matrix[i][j];
+	return _max;
+}
+
+template<typename numericalType>
+pair<size_t, size_t> Matrix<numericalType>::maxIdx() const
+{
+	size_t iIdx = 0, jIdx = 0;
+	numericalType _max = std::numeric_limits<numericalType>::min();
+	for (unsigned i = 0; i < _row; i++)
+	{
+		for (unsigned j = 0; j < _col; j++)
+		{
+			if (_max < matrix[i][j])
+			{
+				_max = matrix[i][j];
+				iIdx = i;
+				jIdx = j;
+			}
+		}
+	}
+	pair<size_t, size_t> retPair;
+	retPair.first = iIdx;
+	retPair.second = jIdx;
+	return retPair;
+}
+
+template<typename numericalType>
+numericalType Matrix<numericalType>::min() const
+{
+	numericalType _min = std::numeric_limits<numericalType>::max();
+	for (unsigned i = 0; i < _row; i++)
+		for (unsigned j = 0; j < _col; j++)
+			if (_min < matrix[i][j])
+				_min = matrix[i][j];
+	return _min;
+}
+
+template<typename numericalType>
+pair<size_t, size_t> Matrix<numericalType>::minIdx() const
+{
+	size_t iIdx = 0, jIdx = 0;
+	numericalType _min = std::numeric_limits<numericalType>::max();
+	for (unsigned i = 0; i < _row; i++)
+	{
+		for (unsigned j = 0; j < _col; j++)
+		{
+			if (_min > matrix[i][j])
+			{
+				_min = matrix[i][j];
+				iIdx = i;
+				jIdx = j;
+			}
+		}
+	}
+	pair<size_t, size_t> retPair;
+	retPair.first = iIdx;
+	retPair.second = jIdx;
+	return retPair;
+}
+
+template<typename numericalType>
+pair<size_t, size_t> Matrix<numericalType>::find(const numericalType& f) const
+{
+	pair<size_t, size_t> retPair;
+	retPair.first = -1;
+	retPair.second = -1;
+
+	for (size_t i = 0; i < _row; i++)
+	{
+		for (size_t j = 0; j < _col; j++)
+		{
+			if (matrix[i][j] == f)	// If number is found then returning the first instance
+			{
+				retPair.first = i;
+				retPair.second = j;
+				return retPair;
+			}
+		}
+	}
+
+	// Returning {-1, -1}
+	return retPair;
+}
+
+template<typename numericalType>
+unsigned Matrix<numericalType>::count(const numericalType& num) const
+{
+	unsigned cnt = 0;
+	for (unsigned i = 0; i < _row; i++)
+		for (unsigned j = 0; j < _col; j++)
+			if (matrix[i][j] == num)
+				cnt++;
+	return cnt;
+}
+
+template<typename numericalType>
+Matrix<numericalType> Matrix<numericalType>::rand(const size_t& rowCnt, const size_t& colCnt, const double& lowerLimit, const double& upperLimit) const
+{
+	// Uses constexpr, which mean the if statements will be evaluated at compile time
+	// It checks if the numericalType is a floating point variable, or integral type
+
+	Matrix<numericalType> result(rowCnt, colCnt);
+
+	// Initialize a random number generator
+	std::random_device rd;
+	std::mt19937 gen(rd());
+
+	// Use different distributions based on the numericalType
+	if constexpr (std::is_floating_point<numericalType>::value) 
+	{
+		std::uniform_real_distribution<numericalType> dis(lowerLimit, upperLimit);
+		for (size_t i = 0; i < rowCnt; ++i) 
+			for (size_t j = 0; j < colCnt; ++j) 
+				result.matrix[i][j] = dis(gen);
+			
+	}
+	else if constexpr (std::is_integral<numericalType>::value) 
+	{
+		// Since the uniform_int_distribution constructor does not accept floating-point types,
+		// static_cast them to the numericalType, ensuring the function parameters are of numericalType.
+		std::uniform_int_distribution<numericalType> dis(static_cast<numericalType>(lowerLimit), static_cast<numericalType>(upperLimit));
+		for (size_t i = 0; i < rowCnt; ++i) 
+			for (size_t j = 0; j < colCnt; ++j) 
+				result.matrix[i][j] = dis(gen);
+	}
+
+	return result;
+}
+
 
 template class Matrix<unsigned>;
 template class Matrix<int>;

@@ -3,15 +3,18 @@
 #ifndef _MATRIX_HPP_
 #define _MATRIX_HPP_
 
-#include <vector>
-#include <iostream>
-#include <exception>
-#include <cmath>
-#include <algorithm>
-#include <numeric>
-#include <tuple>
-#include <iterator>
-#include <map>
+#include <vector>		// For vector conversion
+#include <iostream>		// For deubgging and IO
+#include <exception>	// For exception handling
+#include <cmath>		
+#include <algorithm>	// For iterator algorithms, s.e. find()
+#include <numeric>		// 
+#include <tuple>		// For cooridnates, and tuple types
+#include <iterator>		// For iterators in find() and etc.
+#include <map>			// For mapping different elements
+#include <limits>		// For numerical limits at max and min functions
+#include <omp.h>		// For CPU paralleliaztion
+#include <random>		// For random numbers
 
 using std::vector;
 using MatrixDouble = std::vector<vector<double>>;
@@ -656,6 +659,7 @@ public:
 
 	// Operator overloads
 
+
 	// operator[] (non-const): Provides direct access to a specific row of the matrix.
 	// Parameters:
 	// - index: The index of the row to access.
@@ -1136,6 +1140,78 @@ public:
 	// Returns: A Matrix object representing the solution vector 'x' that minimizes the equation ||Ax - b||^2, where A is the current matrix.
 	// Note: It is the caller's responsibility to ensure that the size of 'b' matches the number of rows in the matrix.
 	Matrix<numericalType> leastSquares(numericalType* b, const size_t& size) const;
+
+	// mean: Calculates the mean (average) value of all elements in the matrix.
+	// This function iterates over every element of the matrix, sums them up, and divides by the total number of elements.
+	// Parameters: None.
+	// Returns: The mean of all matrix elements as a numericalType value. If the matrix is empty, the behavior should be defined accordingly (e.g., return 0 or throw an exception).
+	numericalType mean() const;
+
+	// meanRow: Calculates the mean (average) value of the elements in a specific row of the matrix.
+	// This function sums up all elements in the specified row and divides by the number of elements in that row.
+	// Parameters:
+	// - rowIdx: The index of the row for which the mean is to be calculated. Row indices are expected to start from 0.
+	// Returns: The mean of the elements in the specified row as a numericalType value. If the specified row index is out of bounds, the function should handle it appropriately (e.g., throw an exception).
+	numericalType meanRow(const size_t& rowIdx) const;
+
+	// meanCol: Calculates the mean (average) value of the elements in a specific column of the matrix.
+	// This function sums up all elements in the specified column and divides by the number of elements in that column.
+	// Parameters:
+	// - colIdx: The index of the column for which the mean is to be calculated. Column indices are expected to start from 0.
+	// Returns: The mean of the elements in the specified column as a numericalType value. If the specified column index is out of bounds, the function should handle it appropriately (e.g., throw an exception).
+	numericalType meanCol(const size_t& colIdx) const;
+
+	// max: Finds the maximum value among all elements in the matrix.
+	// Iterates over all elements to identify the maximum value.
+	// Parameters: None.
+	// Returns: The maximum value (as a numericalType) found in the matrix.
+	numericalType max() const;
+
+	// maxIdx: Finds the index of the maximum value in the matrix.
+	// Identifies the position of the maximum value within the matrix.
+	// Parameters: None.
+	// Returns: A pair of size_t representing the row and column indexes of the maximum value in the matrix.
+	pair<size_t, size_t> maxIdx() const;
+
+	// min: Finds the minimum value among all elements in the matrix.
+	// Iterates over all elements to identify the minimum value.
+	// Parameters: None.
+	// Returns: The minimum value (as a numericalType) found in the matrix.
+	numericalType min() const;
+
+	// minIdx: Finds the index of the minimum value in the matrix.
+	// Identifies the position of the minimum value within the matrix.
+	// Parameters: None.
+	// Returns: A pair of size_t representing the row and column indexes of the minimum value in the matrix.
+	pair<size_t, size_t> minIdx() const;
+
+	// find: Searches for a specific value within the matrix and returns its location.
+	// Goes through the matrix elements to find a match for the specified value.
+	// Parameters:
+	// - f: The value of type numericalType to find within the matrix.
+	// Returns: A pair of size_t representing the row and column indexes of the first occurrence of 'f'. If 'f' is not found, behavior is defined accordingly (e.g., returns an invalid pair or throws an exception).
+	pair<size_t, size_t> find(const numericalType& f) const;
+
+	// count: Counts how many times a specific value appears in the matrix.
+	// Iterates over all matrix elements to count occurrences of 'num'.
+	// Parameters:
+	// - num: The value of type numericalType to count within the matrix.
+	// Returns: An unsigned integer representing the number of times 'num' occurs in the matrix.
+	unsigned count(const numericalType& num) const;
+
+	// rand: Generates a matrix of the specified size with random values.
+	// This function creates a new matrix where each element is a random value of type numericalType.
+	// The random values are generated using the C++ standard library's random number generation facilities.
+	// By default, this function generates floating-point values in the range [0.0, 1.0).
+	// If numericalType is an integer type, the values will be in the range [0, std::numeric_limits<numericalType>::max()).
+	// Parameters:
+	// - rowCnt: The number of rows in the generated matrix.
+	// - colCnt: The number of columns in the generated matrix.
+	// - lowerLimit: The lower limit for random number generation, by default 0.0f.
+	// - upperLimit: The upper limit for random number generation, by default 1.0f.
+	// Returns: A Matrix object filled with random values.
+	// Note: Uses constexpr, introduced in c++17, make sure your compiler support it.
+	Matrix<numericalType> rand(const size_t& rowCnt, const size_t& colCnt, const double& lowerLimit = 0.0f, const double& upperLimit = 1.0f) const;
 };
 
 #endif /*_MATRIX_HPP*/
