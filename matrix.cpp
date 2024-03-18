@@ -57,7 +57,7 @@ Matrix<numericalType> Matrix<numericalType>::operator*(const Matrix<numericalTyp
 			{
 				// Multiply each element of the row by the corresponding element of the column
 				// and add it to the sum. This follows the rule:
-				// result[i][j] += this->matrix[i][k] * rhs.matrix[k][j];
+				// result[i][j] += matrix[i][k] * rhs.matrix[k][j];
 				sum += matrix[i][k] * rhs.matrix[k][j];
 			}
 
@@ -584,14 +584,14 @@ void Matrix<numericalType>::printToStdOut() const
 template<typename numericalType>
 numericalType Matrix<numericalType>::trace() const 
 {
-	if (this->row() != this->col())
+	if (_row != _col)
 		throw std::runtime_error("Trace cannot be calculated for non square matrices!");
 
 	numericalType sum = {};
 
 	// Summing up all elements in the diagonal of the matrix
-	for (unsigned i = 0; i < this->row(); i++)
-		for (unsigned j = 0; j < this->col(); j++)
+	for (unsigned i = 0; i < _row); i++)
+		for (unsigned j = 0; j < _col; j++)
 			if (i == j)
 				sum += matrix[i][j];
 
@@ -628,6 +628,14 @@ void Matrix<numericalType>::setToIdentity()
 				matrix[i][j] = {};
 		}
 	}
+}
+
+template<typename numericalType>
+Matrix<numericalType> Matrix<numericalType>::identity(const size_t& n) const
+{
+	Matrix<numericalType> retM(n, n);
+	retM.setToIdentity();
+	return retM;
 }
 
 template<typename numericalType>
@@ -1000,9 +1008,11 @@ Matrix<numericalType> Matrix<numericalType>::inverse() const
 	// Step 4: Extract the inverse matrix from the augmented matrix
 	Matrix<numericalType> inverse(n, n);
 
+	// After Gauss-elimination the matrix looks like: [I | inverse]
+	// Copy the right half
 	for (size_t i = 0; i < n; ++i) 
 		for (size_t j = 0; j < n; ++j) 
-			inverse[i][j] = augmented[i][n + j]; // Copy the right half
+			inverse[i][j] = augmented[i][n + j];
 
 	return inverse;
 }

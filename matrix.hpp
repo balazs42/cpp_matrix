@@ -788,6 +788,12 @@ public:
 	// Returns: None. Modifies the matrix in place, setting it to an identity matrix if square, otherwise no action is taken.
 	void setToIdentity();
 
+	// identity: Returns an nxn identity matrix
+	// Parameters:
+	// - n: Size of the matrix.
+	// Returns: The nxn identity matrix.
+	Matrix<numericalType> identity(const size_t& n) const;
+
 	// setToZeroMatrix-zeroes: Sets all elements of the matrix to zero.
 	// Parameters: None.
 	// Returns: None. Modifies the matrix in place, setting all elements to zero.
