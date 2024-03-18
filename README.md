@@ -41,15 +41,15 @@ int main() {
 
     // Matrix addition
     auto C = A + B;
-    C.print();
+    C.printToStdOut();
 
     // Matrix multiplication
     auto D = A * B;
-    D.print();
+    D.printToStdOut();
 
     // Transpose
     auto At = A.transpose();
-    At.print();
+    At.printToStdOut();
 
     // Determinant
     std::cout << "Determinant of A: " << A.determinant() << std::endl;
@@ -66,7 +66,7 @@ The library also supports more complex operations, such as computing eigenvalues
 // Solve for least squares
 Vector<double> b = {1, 2, 3};
 auto x = A.leastSquares(b);
-x.print();
+x.printToStdOut();
 
 // Eigenvalues and Eigenvectors
 auto eigenvalues = A.eigenvaluesVector();
