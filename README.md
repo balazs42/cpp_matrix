@@ -1,26 +1,86 @@
-# C++ Matrix Library
+# Matrix Library for C++
 
-Welcome to the GitHub repository of my C++ Matrix Library, a comprehensive, efficient, and easy-to-use library designed for performing a wide range of matrix operations. This library is developed with the intention to provide a solid foundation for any project requiring linear algebra computations, including but not limited to, mathematical modeling, simulations, and data analysis.
+A versatile, template-based C++ library for matrix operations, designed to support both basic and advanced matrix manipulations. Whether you're working on mathematical problems, data analysis, or developing algorithms that require matrix operations, this library provides a robust set of features to facilitate your work.
 
-In the future i'm planning to make the library Cuda comppatible so GPU paralellization can be done, and also use Open MP for CPU parallelization, also i'm planning on adding complex data type, to make the library complex number compatible.
+The implementation is based on my linear algebra classes, brilliant.org linear algebra classes, and other youtube motivated videos. In the future i'm planning on adding `CUDA` and `OMP` parallelizaiton options. Currently only supporting `Open MP`.
+
 ## Features
 
-- **Dynamic Matrix Creation**: Create matrices dynamically with any numerical type, supporting operations such as addition, subtraction, multiplication, and more.
-- **Memory Management**: Carefully designed to manage memory efficiently and prevent leaks.
-- **Advanced Operations**: Supports advanced matrix operations including determinant calculation, LU decomposition, inverse, transpose, and eigenvalue computation.
-- **Linear Algebra Essentials**: Offers functionalities to check matrix properties (symmetric, orthogonal, etc.), perform eigen decomposition, and more.
-- **Exception Safety**: Implements thorough error checking and exception handling to ensure robustness and reliability.
-- **Type conversions**: You can use perviously defined vector<vector<>> as matrixes, the class will handle it. Also you can use dynamic memory allocated arrays as vectors, or you can use std::vector<> aswell.
+- **Basic Operations:** Addition, subtraction, multiplication, and scalar operations.
+- **Advanced Manipulations:** Transpose, determinant calculation, inverse, LU decomposition, and more.
+- **Specialized Functions:** Eigenvalues and eigenvectors calculation, matrix exponentiation, least squares solving, and QR decomposition.
+- **Utility Functions:** Mean, max, min, and various norms (e.g., Frobenius, L1) calculations.
+- **Parallel Processing Support:** Leverages OpenMP for CPU parallelization to accelerate computation on multicore processors.
+- **Flexibility:** Template-based implementation supports various numerical types, including `int`, `float`, and `double`.
 
 ## Getting Started
 
-Clone this repository and include the `matrix.hpp` and `matrix.cpp` files in your C++ project. The library is template-based, allowing for flexibility with different numerical types.
+### Prerequisites
+
+Ensure your compiler supports C++17 (or later) and OpenMP for the best experience with this library.
+
+### Including the Library
+
+Copy `matrix.hpp` and `matrix.cpp` into your project directory. Include the header file in your project as shown below:
 
 ```cpp
 #include "matrix.hpp"
-// Example usage
+```
+
+### Basic Usage
+
+Here's how you can perform some basic operations with the Matrix library:
+
+```cpp
+#include "matrix.hpp"
+
 int main() {
-    Matrix<double> mat(3, 3); // Create a 3x3 double matrix
-    // Perform operations...
+    // Create matrices
+    Matrix<double> A = {{1, 2, 3}, {4, 5, 6}, {7, 8, 9}};
+    Matrix<double> B = {{9, 8, 7}, {6, 5, 4}, {3, 2, 1}};
+
+    // Matrix addition
+    auto C = A + B;
+    C.print();
+
+    // Matrix multiplication
+    auto D = A * B;
+    D.print();
+
+    // Transpose
+    auto At = A.transpose();
+    At.print();
+
+    // Determinant
+    std::cout << "Determinant of A: " << A.determinant() << std::endl;
+
     return 0;
 }
+```
+
+### Advanced Operations
+
+The library also supports more complex operations, such as computing eigenvalues and solving for least squares:
+
+```cpp
+// Solve for least squares
+Vector<double> b = {1, 2, 3};
+auto x = A.leastSquares(b);
+x.print();
+
+// Eigenvalues and Eigenvectors
+auto eigenvalues = A.eigenvaluesVector();
+std::cout << "Eigenvalues: ";
+for (auto val : eigenvalues) {
+    std::cout << val << " ";
+}
+std::cout << std::endl;
+```
+
+## Contributing
+
+Contributions to the Matrix Library are welcome! Whether you're fixing bugs, adding new features, or improving documentation, your help is appreciated. Please open an issue or pull request to get started.
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
