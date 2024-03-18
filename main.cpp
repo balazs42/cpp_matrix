@@ -2,6 +2,12 @@
 
 int main()
 {
+	Matrix<double> P = { {1, 1, 0, 0}, {0, 1, 1, 0}, {0, 0, 1, 1}, {1, 0, 0, 1} };
+	Matrix<double> invP = { {1, -1, 0, 0}, {0, 1, -1, 0}, {0, 0, 1, -1}, {0, 0, 0, 1} };
+	Matrix<double> X = { {1, 1, 1, 1}, {0, 1, 1, 1}, {0, 0, 1, 1,}, {0, 0, 0, 1} };
+	
+	Matrix<double> ans = invP * P * X;
+
 	Matrix<double> matrixA = { {1.0, 32.1}, {10.7, 2.0} };
 	Matrix<double> A = { {0.0, 0.0, 4.7},
 						 {0.0, 2.2, 1.5},

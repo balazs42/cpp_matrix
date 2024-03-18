@@ -3,13 +3,16 @@
 template<typename numericalType>
 Matrix<numericalType> Matrix<numericalType>::operator+(const Matrix<numericalType>& rhs)
 {
-	if (this->row() != rhs.row() || this->col() != rhs.col())
+	if (_row != rhs.row() || _col != rhs.col())
 		throw std::runtime_error("Cannot add matrices of not the same size!");
 
-	Matrix<numericalType> cpy(this->row(), this->col());
+	Matrix<numericalType> cpy(_row, _col);
 
-	for (unsigned i = 0; i < this->row(); i++)
-		for (unsigned j = 0; j < this->col(); j++)
+#ifdef _USING_OMP_
+#pragma omp parallel for collapse(2)
+#endif
+	for (unsigned i = 0; i < _row; i++)
+		for (unsigned j = 0; j < _col; j++)
 			cpy[i][j] = matrix[i][j] + rhs[i][j];
 
 	return cpy;
@@ -18,13 +21,16 @@ Matrix<numericalType> Matrix<numericalType>::operator+(const Matrix<numericalTyp
 template<typename numericalType>
 Matrix<numericalType> Matrix<numericalType>::operator-(const Matrix<numericalType>& rhs)
 {
-	if (this->row() != rhs.row() || this->col() != rhs.col())
+	if (_row != rhs.row() || _col != rhs.col())
 		throw std::runtime_error("Cannot subtract matrices of not the same size!");
 
-	Matrix<numericalType> cpy(this->row(), this->col());
+	Matrix<numericalType> cpy(_row, _col);
 
-	for (unsigned i = 0; i < this->row(); i++)
-		for (unsigned j = 0; j < this->col(); j++)
+#ifdef _USING_OMP_
+#pragma omp parallel for collapse(2)
+#endif
+	for (unsigned i = 0; i < _row; i++)
+		for (unsigned j = 0; j < _col; j++)
 			cpy[i][j] = matrix[i][j] - rhs[i][j];
 
 	return cpy;
@@ -53,6 +59,9 @@ Matrix<numericalType> Matrix<numericalType>::operator*(const Matrix<numericalTyp
 
 			// Now, iterate over each element of the current row of the first matrix
 			// and each element of the current column of the second matrix
+#ifdef _USING_OMP_
+#pragma omp parallel for reduction(+:sum)
+#endif
 			for (size_t k = 0; k < _col; ++k) 
 			{
 				// Multiply each element of the row by the corresponding element of the column
@@ -75,6 +84,9 @@ Matrix<numericalType> Matrix<numericalType>::operator*(const numericalType& scal
 {
 	Matrix<numericalType> retM = *this;
 
+#ifdef _USING_OMP_
+#pragma omp parallel for collapse(2) 
+#endif
 	for (unsigned i = 0; i < _row; i++)
 		for (unsigned j = 0; j < _col; j++)
 			retM[i][j] *= scalar;
@@ -86,6 +98,9 @@ template<typename numericalType>
 Matrix<numericalType> Matrix<numericalType>::operator-=(const Matrix<numericalType>& rhs)
 {
 	Matrix<numericalType> deepCpy = *this;
+#ifdef _USING_OMP_
+#pragma omp parallel for collapse(2)
+#endif
 	for (unsigned i = 0; i < _row; i++)
 		for (unsigned j = 0; j < _col; j++)
 			deepCpy[i][j] -= rhs[i][j];
@@ -95,7 +110,10 @@ Matrix<numericalType> Matrix<numericalType>::operator-=(const Matrix<numericalTy
 template<typename numericalType>
 Matrix<numericalType> Matrix<numericalType>::operator/(const numericalType& scalar)
 {
-	Matrix<numericalType> retM = *this;	// Depp copy of this
+	Matrix<numericalType> retM = *this;	// Deep copy of this
+#ifdef _USING_OMP_
+#pragma omp paralell for collapse(2)
+#endif
 	for (unsigned i = 0; i < _row; i++)
 		for (unsigned j = 0; j < _col; j++)
 			retM[i][j] /= scalar;
@@ -135,6 +153,9 @@ numericalType Matrix<numericalType>::normalizeRowForPosition(const size_t& rowId
 	if (commonDenominator == 0)
 		throw std::runtime_error("Cannot divide by zero, at normalizing row!");
 
+#ifdef _USING_OMP_
+#pragma omp parallel for
+#endif
 	for (unsigned i = 0; i < _col; i++)
 		matrix[rowIdx][i] /= commonDenominator;
 
@@ -146,7 +167,9 @@ void Matrix<numericalType>::scalarMultiplyRow(const numericalType& scalar, const
 {
 	if (rowIdx >= _row)
 		throw std::runtime_error("Cannot scalar multiply row, row index out of bounds!");
-
+#ifdef _USING_OMP_
+#pragma omp parallel for
+#endif
 	for (unsigned i = 0; i < _col; i++)
 		matrix[rowIdx][i] *= scalar;
 }
@@ -156,7 +179,9 @@ void Matrix<numericalType>::scalarMultiplyCol(const numericalType& scalar, const
 {
 	if (colIdx >= _col)
 		throw std::runtime_error("Cannot scalar multiply col, col index out if bounds!");
-
+#ifdef _USING_OMP_
+#pragma omp parallel for
+#endif
 	for (unsigned i = 0; i < _row; i++)
 		matrix[i][colIdx] *= scalar;
 }
@@ -168,6 +193,9 @@ void Matrix<numericalType>::addRow(const size_t& row, const size_t& rowToAdd, co
 		throw std::runtime_error("Cannot add rows, since they are out of bounds!");
 
 	// Adding row
+#ifdef _USING_OMP_
+#pragma omp parallel for
+#endif
 	for (unsigned i = 0; i < _col; i++)
 		matrix[row][i] = matrix[row][i] + howManyTimes * sign * 1 * matrix[rowToAdd][i];
 }
@@ -178,6 +206,9 @@ void Matrix<numericalType>::addRow(const size_t& row, vector<numericalType> rowT
 	if (row > _row || rowToAdd.size() > _col)
 		throw std::runtime_error("Cannot add row since it is out of bounds, or size doesnt match!");
 
+#ifdef _USING_OMP_
+#pragma omp parallel for
+#endif
 	for (unsigned i = 0; i < _col; i++)
 		matrix[row][i] = matrix[row][i] + howManyTimes * sign * 1 * rowToAdd[i];
 }
@@ -189,6 +220,10 @@ numericalType* Matrix<numericalType>::subtractRow(numericalType* subFrom, const 
 		throw std::runtime_error("Cannot subtract rows which are not the same size!");
 
 	numericalType* retRow = new numericalType[size1];
+
+#ifdef _USING_OMP_
+#pragma omp parallel for
+#endif
 	for (unsigned i = 0; i < size1; i++)
 		retRow[i] = subFrom[i] - subThis[i];
 
@@ -243,6 +278,9 @@ numericalType Matrix<numericalType>::dotProduct(const size_t& row1, const size_t
 
 	numericalType prod = {};
 
+#ifdef _USING_OMP_
+#pragma omp parallel for reduction(+:prod)
+#endif
 	for (unsigned i = 0; i < _col; i++)
 		prod += matrix[row1][i] * matrix[row2][i];
 
@@ -260,6 +298,9 @@ numericalType Matrix<numericalType>::dotProduct(numericalType* vec, const size_t
 
 	numericalType prod = {};
 
+#ifdef _USING_OMP_
+#pragma omp parallel for reduction(+:prod)
+#endif
 	for (unsigned i = 0; i < size; i++)
 		prod += matrix[rowIdx][i] * vec[i];
 
@@ -277,6 +318,9 @@ numericalType Matrix<numericalType>::dotProduct(const vector<numericalType>& vec
 
 	numericalType prod = {};
 
+#ifdef _USING_OMP_
+#pragma omp parallel for reduction(+:prod)
+#endif
 	for (unsigned i = 0; i < _col; i++)
 		prod += matrix[rowIdx][i] * vec[i];
 
@@ -291,7 +335,12 @@ numericalType Matrix<numericalType>::dotProduct(const vector<numericalType>& vec
 
 	numericalType prod = {};
 
-	for (unsigned i = 0; i < vec1.size(); i++)
+	unsigned size = vec1.size();
+
+#ifdef _USING_OMP_
+#pragma omp parallel for reduction(+:prod)
+#endif
+	for (unsigned i = 0; i < size; i++)
 		prod += vec1[i] * vec2[1];
 
 	return prod;
@@ -305,6 +354,9 @@ numericalType Matrix<numericalType>::dotProduct(numericalType* vec1, const size_
 
 	numericalType prod = {};
 
+#ifdef _USING_OMP_
+#pragma omp parallel for reduction(+:prod)
+#endif
 	for (unsigned i = 0; i < size1; i++)
 		prod += vec1[i] * vec2[i];
 
@@ -320,6 +372,9 @@ numericalType Matrix<numericalType>::rowAbs(const size_t& idx) const
 	numericalType abs = {};
 
 	// Sum up all the elements squared
+#ifdef _USING_OMP_
+#pragma omp parallel for reduction(+:abs)
+#endif
 	for (unsigned i = 0; i < _col; i++)
 		abs += matrix[idx][i] * matrix[idx][i];
 
@@ -332,6 +387,9 @@ numericalType Matrix<numericalType>::rowAbs(numericalType* row, const size_t& si
 	numericalType abs = {};
 
 	// Sum up all the elements squared
+#ifdef _USING_OMP_
+#pragma omp parallel for reduction(+:abs)
+#endif
 	for (unsigned i = 0; i < _col; i++)
 		abs += row[i] * row[i];
 
@@ -344,6 +402,9 @@ numericalType Matrix<numericalType>::rowAbs(vector<numericalType> row) const
 	numericalType abs = {};
 
 	// Sum up all the elements squared
+#ifdef _USING_OMP_
+#pragma omp parallel for reduction(+:abs)
+#endif
 	for (unsigned i = 0; i < _col; i++)
 		abs += row[i] * row[i];
 
@@ -358,6 +419,9 @@ numericalType Matrix<numericalType>::colAbs(const size_t& idx) const
 
 	numericalType abs = {};
 
+#ifdef _USING_OMP_
+#pragma omp parallel for reduction(+:abs)
+#endif
 	for (unsigned i = 0; i < _row; i++)
 		abs += matrix[i][idx] * matrix[i][idx];
 
@@ -374,6 +438,9 @@ numericalType Matrix<numericalType>::distanceFromRow(const size_t& distanceFromI
 
 	numericalType dist = {};
 
+#ifdef _USING_OMP_
+#pragma omp parallel for reduction(+:dist)
+#endif
 	for (unsigned i = 0; i < _col; i++)
 		dist += (matrix[distanceFromIdx][i] - matrix[idx][i]) * (matrix[distanceFromIdx][i] - matrix[idx][i]);
 
@@ -391,6 +458,9 @@ numericalType Matrix<numericalType>::distanceFromRow(numericalType* otherROw, co
 
 	numericalType dist = {};
 
+#ifdef _USING_OMP_
+#pragma omp parallel for reduction(+:dist)
+#endif
 	for (unsigned i = 0; i < _col; i++)
 		dist += (matrix[distanceFromIdx][i] - otherROw[i]) * (matrix[distanceFromIdx][i] - otherROw[i]);
 
@@ -410,6 +480,9 @@ numericalType Matrix<numericalType>::distanceFromRow(const vector<numericalType>
 	const unsigned len = otherRow.size();
 	numericalType* other_row = new numericalType[len];
 
+#ifdef _USING_OMP_
+#pragma omp parallel for
+#endif
 	for (unsigned i = 0; i < len; i++)
 		other_row[i] = otherRow[i];
 
@@ -429,6 +502,9 @@ numericalType Matrix<numericalType>::distanceFromCol(const size_t& distanceFromI
 
 	numericalType dist = {};
 
+#ifdef _USING_OMP_
+#pragma omp parallel for reduction(+:dist)
+#endif
 	for (unsigned i = 0; i < _row; i++)
 		dist += (matrix[i][distanceFromIdx] - matrix[i][idx]) * (matrix[i][distanceFromIdx] - matrix[i][idx]);
 
@@ -446,6 +522,9 @@ numericalType Matrix<numericalType>::distanceFromCol(numericalType* otherCol, co
 
 	numericalType dist = {};
 
+#ifdef _USING_OMP_
+#pragma omp parallel for reduction(+:dist)
+#endif
 	for (unsigned i = 0; i < _row; i++)
 		dist += (matrix[i][distanceFromIdx] - otherCol[i]);
 
@@ -462,6 +541,10 @@ numericalType Matrix<numericalType>::distanceFromCol(const vector<numericalType>
 		throw std::runtime_error("Cannot calculate distance, since index is out of bounds!");
 
 	numericalType* other_col = new numericalType[_row];
+
+#ifdef _USING_OMP_
+#pragma omp parallel for
+#endif
 	for (unsigned i = 0; i < _row; i++)
 		other_col[i] = otherCol[i];
 
@@ -480,6 +563,9 @@ numericalType Matrix<numericalType>::distanceFromMatrix(const Matrix<numericalTy
 
 	numericalType dist = {};
 
+#ifdef _USING_OMP_
+#pragma omp parallel for collapse(2) reduction(+:dist)
+#endif
 	for (unsigned i = 0; i < _row; i++)
 		for (unsigned j = 0; j < _col; j++)
 			dist += (matrix[i][j] - other[i][j]) * (matrix[i][j] - other[i][j]);
@@ -590,6 +676,9 @@ numericalType Matrix<numericalType>::trace() const
 	numericalType sum = {};
 
 	// Summing up all elements in the diagonal of the matrix
+#ifdef _USING_OMP_
+#pragma omp parallel for collapse(2) reduction(+:sum)
+#endif
 	for (unsigned i = 0; i < _row; i++)
 		for (unsigned j = 0; j < _col; j++)
 			if (i == j)
@@ -605,9 +694,12 @@ Matrix<numericalType> Matrix<numericalType>::transpose() const
 
 	Matrix<numericalType> result(_col, _row); // Note swapped dimensions
 
+#ifdef _USING_OMP_
+#pragma omp parallel for collapse(2)
+#endif
 	for (size_t i = 0; i < _row; ++i) 
 		for (size_t j = 0; j < _col; ++j) 
-			result.matrix[j][i] = matrix[i][j]; // Swap indices for transpose
+			result[j][i] = matrix[i][j]; // Swap indices for transpose
 		
 	return result;
 }
@@ -615,12 +707,15 @@ Matrix<numericalType> Matrix<numericalType>::transpose() const
 template<typename numericalType>
 void Matrix<numericalType>::setToIdentity()
 {
-	if (this->row() != this->col())
+	if (_row != _col)
 		throw std::runtime_error("Cannot set non square matrix to identity!");
 
-	for (unsigned i = 0; i < this->row(); i++)
+#ifdef _USING_OMP_
+#pragma omp parallel for collapse(2)
+#endif
+	for (unsigned i = 0; i < _row; i++)
 	{
-		for (unsigned j = 0; j < this->col(); j++)
+		for (unsigned j = 0; j < _col; j++)
 		{
 			if (i == j)
 				matrix[i][j] = 1;
@@ -641,16 +736,22 @@ Matrix<numericalType> Matrix<numericalType>::identity(const size_t& n) const
 template<typename numericalType>
 void Matrix<numericalType>::setToZeroMatrix()
 {
-	for (unsigned i = 0; i < this->row(); i++)
-		for (unsigned j = 0; j < this->col(); j++)
+#ifdef _USING_OMP_
+#pragma omp parallel for collapse(2)
+#endif
+	for (unsigned i = 0; i < _row; i++)
+		for (unsigned j = 0; j < _col; j++)
 			matrix[i][j] = {};
 }
 
 template<typename numericalType>
 void Matrix<numericalType>::setToHomogenous(const numericalType& hom)
 {
-	for (unsigned i = 0; i < this->row(); i++)
-		for (unsigned j = 0; j < this->col(); j++)
+#ifdef _USING_OMP_
+#pragma omp parallel for collapse(2)
+#endif
+	for (unsigned i = 0; i < _row; i++)
+		for (unsigned j = 0; j < _col; j++)
 			matrix[i][j] = hom;
 }
 
@@ -661,14 +762,17 @@ void Matrix<numericalType>::luDecomposition(Matrix<numericalType>& L, Matrix<num
 
 	Matrix<numericalType> pL(_row, _row), pU(_row, _row);			// L and U direction matrices
 
-	if (this->row() != this->col())							// Checking for square matrix
+	if (_row != _col)							// Checking for square matrix
 		throw std::runtime_error("Cannot perform LU decomposition on non-square matrix!");
 
-	unsigned n = this->row();						// n is the size of the nxn matrix
+	unsigned n = _row;						// n is the size of the nxn matrix
 
 	pL.setToIdentity();						// Setting L to identity, U matrix to zeroes
 	pU.setToZeroMatrix();
 
+#ifdef _USING_OMP_
+#pragma omp parallel for
+#endif
 	for (unsigned i = 0; i < n; i++)
 	{
 		// Upper triangle
@@ -712,7 +816,7 @@ Matrix<numericalType> Matrix<numericalType>::organizeDecreasing() const
 		{
 			if (matrix[i][j] != 0)
 			{
-				leadingIndexes[i] = j;
+				leadingIndexes[i] = static_cast<numericalType>(j);
 				break;
 			}
 		}
@@ -829,14 +933,17 @@ Matrix<numericalType> Matrix<numericalType>::poorGaussian(vector<numericalType> 
 template<typename numericalType>
 Matrix<numericalType> Matrix<numericalType>::gaussJordanElimination() const
 {
-	size_t rowCount = this->row();
-	size_t colCount = this->col();
+	size_t rowCount = _row;
+	size_t colCount = _col;
 
 	Matrix<numericalType> retM(rowCount, colCount);
 	for (unsigned i = 0; i < rowCount; i++)
 		for (unsigned j = 0; j < colCount; j++)
 			retM[i][j] = matrix[i][j];
 
+#ifdef _USING_OMP_
+#pragma omp parallel for
+#endif
 	for (size_t col = 0; col < colCount; ++col) 
 	{
 		// Step 1: Find a pivot for the current column
@@ -880,6 +987,9 @@ Matrix<numericalType> Matrix<numericalType>::kernel() const
 	Matrix<numericalType> basis(_row, _col);
 
 	// Identify free variables and create basis vectors
+#ifdef _USING_OMP_
+#pragma omp parallel for
+#endif
 	for (size_t col = 0; col < colCount; ++col) 
 	{
 		bool isFreeVariable = true;
@@ -919,12 +1029,14 @@ Matrix<numericalType> Matrix<numericalType>::image() const
 {
 	Matrix<numericalType> rrefMatrix = gaussJordanElimination();
 
-	size_t rowCount = _row;
 	Matrix<numericalType> basis;
 
-	for (size_t row = 0; row < rowCount; ++row) 
+#ifdef _USING_OMP_
+#pragma omp parallel for
+#endif
+	for (size_t row = 0; row < _row; ++row) 
 	{
-		for (size_t col = 0; col < this->col(); ++col) 
+		for (size_t col = 0; col < _col; ++col) 
 		{
 			if (rrefMatrix[row][col] == 1) 
 			{
@@ -949,6 +1061,9 @@ unsigned Matrix<numericalType>::rank() const
 	// Get the rref form of the matrix
 	Matrix<numericalType> rrefM = gaussJordanElimination();
 
+#ifdef _USING_OMP_
+#pragma omp parallel for
+#endif
 	for (unsigned i = 0; i < _row; i++)
 	{
 		unsigned j = 0;
@@ -993,6 +1108,9 @@ numericalType Matrix<numericalType>::determinant() const
 	luDecomposition(L, U); // Feltételezve, hogy ez a függvény nem változtatja meg az eredeti mátrixot
 
 	numericalType det = 1;
+#ifdef _USING_OMP_
+#pragma omp parallel for redustion(*:det)
+#endif
 	for (size_t i = 0; i < U.row(); ++i) 
 		det *= U[i][i];
 
@@ -1014,6 +1132,9 @@ Matrix<numericalType> Matrix<numericalType>::inverse() const
 	size_t n = _row;
 	Matrix<numericalType> augmented(n, 2 * n);
 
+#ifdef _USING_OMP_
+#pragma omp parallel for
+#endif
 	for (size_t i = 0; i < n; ++i) 
 	{
 		for (size_t j = 0; j < n; ++j) 
@@ -1030,6 +1151,9 @@ Matrix<numericalType> Matrix<numericalType>::inverse() const
 
 	// After Gauss-elimination the matrix looks like: [I | inverse]
 	// Copy the right half
+#ifdef _USING_OMP_
+#pragma omp parallel for collapse(2)
+#endif
 	for (size_t i = 0; i < n; ++i) 
 		for (size_t j = 0; j < n; ++j) 
 			inverse[i][j] = augmented[i][n + j];
@@ -1163,6 +1287,10 @@ vector<numericalType> Matrix<numericalType>::getNormalVector() const
 
 	// Return the first non-zero vector in the null space as the normal vector
 	vector<numericalType> normalVector(nullSpaceMatrix.col());
+
+#ifdef _USING_OMP_
+#pragma omp parallel for
+#endif
 	for (size_t j = 0; j < nullSpaceMatrix.col(); ++j) 
 		normalVector[j] = nullSpaceMatrix[0][j];		// Taking the first row for simplicity
 
@@ -1179,6 +1307,9 @@ Matrix<numericalType> Matrix<numericalType>::outerProduct(numericalType* vector1
 	size_t n = size1;
 	Matrix<numericalType> m(n, n);
 
+#ifdef _USING_OMP_
+#pragma omp parallel for collapse(2)
+#endif
 	for (size_t i = 0; i < n; ++i)
 		for (size_t j = 0; j < n; ++j)
 			m[i][j] = vector1[i] * vector2[j];
@@ -1196,6 +1327,9 @@ Matrix<numericalType> Matrix<numericalType>::outerProduct(vector<numericalType> 
 	size_t n = vector1.size();
 	Matrix<numericalType> m(n, n);
 
+#ifdef _USING_OMP_
+#pragma omp parallel for collapse(2)
+#endif
 	for (size_t i = 0; i < n; ++i) 
 		for (size_t j = 0; j < n; ++j) 
 			m[i][j] = vector1[i] * vector2[j];
@@ -1427,6 +1561,9 @@ void Matrix<numericalType>::qrDecomposition(Matrix<numericalType>& Q, Matrix<num
 	Q = Matrix<numericalType>(m, n);
 	R = Matrix<numericalType>(n, n);
 
+#ifdef _USING_OMP_
+#pragma omp parallel for
+#endif
 	for (size_t i = 0; i < n; ++i) 
 	{
 		vector<numericalType> ai = this->getColVector(i);
@@ -1465,6 +1602,9 @@ void Matrix<numericalType>::reducedQRDecomposition(Matrix<numericalType>& Q, Mat
 	R = Matrix<numericalType>(r, n);
 
 	// Apply the Gram-Schmidt process to orthogonalize the columns of the original matrix
+#ifdef _USING_OMP_
+#pragma omp parallel for
+#endif
 	for (size_t i = 0; i < r; ++i)  // Iterate up to the rank 'r'
 	{
 		vector<numericalType> ai = this->getColVector(i); // Get the i-th column of A
@@ -1508,6 +1648,9 @@ vector<numericalType> Matrix<numericalType>::eigenvaluesVector(int maxIterations
 	Matrix<numericalType> A = *this; // Copy of the matrix, as the process is destructive
 	Matrix<numericalType> Q(n, n), R(n, n);
 
+#ifdef _USING_OMP_
+#pragma omp parallel for
+#endif
 	for (int iter = 0; iter < maxIterations; ++iter) 
 	{
 		// QR decomposition of A
@@ -1549,6 +1692,10 @@ numericalType* Matrix<numericalType>::eigenvalues(int maxIterations, numericalTy
 
 	// Copiing each element
 	numericalType* ret = new numericalType[_row];
+
+#ifdef _USING_OMP_
+#pragma omp parallel for
+#endif
 	for (unsigned i = 0; i < _row; i++)
 		ret[i] = retVec[i];
 
@@ -1558,12 +1705,15 @@ numericalType* Matrix<numericalType>::eigenvalues(int maxIterations, numericalTy
 template<typename numericalType>
 Matrix<numericalType> Matrix<numericalType>::eigenvectors() const
 {
-	vector<numericalType> eigenvalues = this->eigenvaluesVector();
-	Matrix<numericalType> eigenvectors(this->row(), eigenvalues.size());
+	vector<numericalType> eigenvalues = eigenvaluesVector();
+	Matrix<numericalType> eigenvectors(_row, eigenvalues.size());
 
 	Matrix<numericalType> I(_row, _row);
 	I.setToIdentity();
 
+#ifdef _USING_OMP_
+#pragma omp parallel for
+#endif
 	for (size_t i = 0; i < eigenvalues.size(); ++i) 
 	{
 		numericalType lambda = eigenvalues[i];
@@ -1571,8 +1721,8 @@ Matrix<numericalType> Matrix<numericalType>::eigenvectors() const
 		Matrix<numericalType> A_lambdaI = *this; // A - lambda*I
 		A_lambdaI -= lambdaI;
 
-		// Assuming 'solveForX' is a method to solve (A - lambda*I)x = b using, e.g., LU decomposition
-		std::vector<numericalType> b(this->row(), 1); // Initial guess vector
+		// Method to solve (A - lambda*I)x = b using, e.g., LU decomposition
+		std::vector<numericalType> b(_row, 1); // Initial guess vector
 		std::vector<numericalType> x = A_lambdaI.eigenvaluesVector();
 
 		// Normalize x
@@ -1595,6 +1745,9 @@ Matrix<numericalType> Matrix<numericalType>::getSubMatrix(const size_t& rowEnd, 
 
 	Matrix<numericalType> subM(rowEnd, colEnd);
 
+#ifdef _USING_OMP_
+#pragma omp parallel for collapse(2)
+#endif
 	for (unsigned i = 0; i < rowEnd; i++)
 		for (unsigned j = 0; j < colEnd; j++)
 			subM[i][j] = matrix[i][j];
@@ -1613,6 +1766,9 @@ Matrix<numericalType> Matrix<numericalType>::getSubMatrix(const size_t& rowStart
 
 	Matrix<numericalType> subM(rowEnd - rowStart, colEnd - colStart);
 
+#ifdef _USING_OMP_
+#pragma omp parallel for collapse(2)
+#endif
 	for (unsigned i = rowStart; i < rowEnd; i++)
 		for (unsigned j = colStart; j < colEnd; j++)
 			subM[i - rowStart][j - colStart] = matrix[i][j];
@@ -1795,6 +1951,10 @@ template<typename numericalType>
 numericalType Matrix<numericalType>::frobeniusNorm() const 
 {
 	numericalType sum = 0;
+
+#ifdef _USING_OMP_
+#pragma omp parallel for collapse(2) reduction(+:sum)
+#endif
 	for (size_t i = 0; i < _row; ++i) 
 		for (size_t j = 0; j < _col; ++j) 
 			sum += matrix[i][j] * matrix[i][j];
@@ -1806,6 +1966,10 @@ template<typename numericalType>
 numericalType Matrix<numericalType>::l1Norm() const 
 {
 	numericalType maxSum = 0;
+
+#ifdef _USING_OMP_
+#pragma omp parallel for
+#endif
 	for (size_t j = 0; j < _col; ++j) 
 	{
 		numericalType sum = 0;
@@ -1901,6 +2065,9 @@ Matrix<numericalType> Matrix<numericalType>::choleskyDecomposition() const
 
 	Matrix<numericalType> L(_row, _col);
 
+#ifdef _USING_OMP_
+#pragma omp parallel for
+#endif
 	for (size_t i = 0; i < _row; ++i) 
 	{
 		for (size_t j = 0; j <= i; ++j) 
@@ -2174,6 +2341,9 @@ double Matrix<numericalType>::angleBetween(numericalType* row1, const size_t& si
 	double cosTheta = 0.0f;
 
 	// Calculating a*b
+#ifdef _USING_OMP_
+#pragma omp parallel for redution(+:cosTheta)
+#endif
 	for (unsigned i = 0; i < size1; i++)
 		cosTheta += static_cast<double>(row1[i] * row2[i]);
 
@@ -2264,17 +2434,28 @@ numericalType* Matrix<numericalType>::projectTo(numericalType* projectThisTo, co
 
 	// Calculating u*v
 	numericalType upper = 0;
+
+#ifdef _USING_OMP_
+#pragma omp parallel for reduction(+:upper)
+#endif
 	for (unsigned i = 0; i < size1; i++)
 		upper += toThis[i] * projectThisTo[i];
 
 	// Calculating u*u
 	numericalType lower = 0;
+#ifdef _USING_OMP_
+#pragma omp parallel for reduction(+:lower)
+#endif
 	for (unsigned i = 0; i < size1; i++)
 		lower += toThis[i] * toThis[i];
 
 	numericalType scalar = upper / lower;
 	// Calculating (u*v)/(u*u) * u
 	numericalType* projected = new numericalType[size1];
+
+#ifdef _USING_OMP_
+#pragma omp parallel for
+#endif
 	for (unsigned i = 0; i < size1; i++)
 		projected[i] = scalar * toThis[i];
 
@@ -2290,6 +2471,9 @@ Matrix<numericalType> Matrix<numericalType>::gramSchmidAlgorithm() const
 	size_t numCols = orthoMatrix.col();
 
 	// Process each row
+#ifdef _USING_OMP_
+#pragma omp parallel for
+#endif
 	for (size_t i = 0; i < numRows; ++i) 
 	{
 		vector<numericalType> vi = orthoMatrix.getRowVector(i);
@@ -2374,6 +2558,10 @@ numericalType Matrix<numericalType>::mean() const
 		throw std::runtime_error("Cannot calulate mean for matrix with 0 dimesnsions!");
 
 	numericalType _mean = {};
+
+#ifdef _USING_OMP_
+#pragma omp parallel for reduction(+:mean)
+#endif
 	for (unsigned i = 0; i < _row; i++)
 		_mean += meanRow(i);
 
@@ -2391,6 +2579,9 @@ numericalType Matrix<numericalType>::meanRow(const size_t& rowIdx) const
 
 	numericalType mean = {};
 
+#ifdef _USING_OMP_
+#pragma omp parallel for reduction(+:mean)
+#endif
 	for (unsigned i = 0; i < _col; i++)
 		mean += matrix[rowIdx][i];
 
@@ -2408,6 +2599,9 @@ numericalType Matrix<numericalType>::meanCol(const size_t& colIdx) const
 
 	numericalType mean = {};
 
+#ifdef _USING_OMP_
+#pragma omp parallel for reduction(+:mean)
+#endif
 	for (unsigned i = 0; i < _row; i++)
 		mean += matrix[i][colIdx];
 
@@ -2418,6 +2612,10 @@ template<typename numericalType>
 numericalType Matrix<numericalType>::max() const
 {
 	numericalType _max = std::numeric_limits<numericalType>::min();
+
+#ifdef _USING_OMP_
+#pragma omp parallel for collapse(2)
+#endif
 	for (unsigned i = 0; i < _row; i++)
 		for (unsigned j = 0; j < _col; j++)
 			if (_max < matrix[i][j])
@@ -2430,6 +2628,10 @@ pair<size_t, size_t> Matrix<numericalType>::maxIdx() const
 {
 	size_t iIdx = 0, jIdx = 0;
 	numericalType _max = std::numeric_limits<numericalType>::min();
+
+#ifdef _USING_OMP_
+#pragma omp parallel for collapse(2)
+#endif
 	for (unsigned i = 0; i < _row; i++)
 	{
 		for (unsigned j = 0; j < _col; j++)
@@ -2452,6 +2654,10 @@ template<typename numericalType>
 numericalType Matrix<numericalType>::min() const
 {
 	numericalType _min = std::numeric_limits<numericalType>::max();
+
+#ifdef _USING_OMP_
+#pragma omp parallel for collapse(2)
+#endif
 	for (unsigned i = 0; i < _row; i++)
 		for (unsigned j = 0; j < _col; j++)
 			if (_min < matrix[i][j])
@@ -2464,6 +2670,10 @@ pair<size_t, size_t> Matrix<numericalType>::minIdx() const
 {
 	size_t iIdx = 0, jIdx = 0;
 	numericalType _min = std::numeric_limits<numericalType>::max();
+
+#ifdef _USING_OMP_
+#pragma omp parallel for collapse(2)
+#endif
 	for (unsigned i = 0; i < _row; i++)
 	{
 		for (unsigned j = 0; j < _col; j++)
@@ -2510,6 +2720,9 @@ template<typename numericalType>
 unsigned Matrix<numericalType>::count(const numericalType& num) const
 {
 	unsigned cnt = 0;
+#ifdef _USING_OMP_
+#pragma omp parallel for collapse(2)
+#endif
 	for (unsigned i = 0; i < _row; i++)
 		for (unsigned j = 0; j < _col; j++)
 			if (matrix[i][j] == num)
@@ -2585,6 +2798,32 @@ Matrix<numericalType> Matrix<numericalType>::rotationMatrix3D(const double& alph
 
 	return rotM;
 }
+
+template<typename numericalType>
+void Matrix<numericalType>::resize(const size_t& rowNum, const size_t& colNum, bool fillWithOld)
+{
+	Matrix<numericalType> newM(rowNum, colNum);
+
+	// If fill with old is not selected, then returning the new matrix, with all zeroes
+	if (!fillWithOld) 
+	{
+		*this = newM;
+	}
+	else	// Filling in old matrix data, until it is possible
+	{
+		unsigned maxRow = (rowNum > this->_row) ? this->_row : rowNum;
+		unsigned maxCol = (colNum > this->_col) ? this->_col : colNum;
+
+#ifdef _USING_OMP_
+#pragma omp parallel for collapse(2)
+#endif
+		for (unsigned i = 0; i < maxRow; i++)
+			for (unsigned j = 0; j < maxCol; j++)
+				newM[i][j] = this->matrix[i][j];
+		*this = newM;
+	}
+}
+
 
 template class Matrix<unsigned>;
 template class Matrix<int>;

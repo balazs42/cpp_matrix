@@ -18,7 +18,7 @@
 
 // Define parallelization processes, uncomment which CUDA for GPU, OMP for CPU parallelization
 
-//#define _USING_OMP_
+#define _USING_OMP_
 //#define _USING_CUDA_
 
 #ifdef _USING_OMP_
@@ -1246,6 +1246,24 @@ public:
 	// - gamma: Angle to rotate on x axis.
 	// Returns: A 3D matrix filled with the right rotation values, for the 3D rotation.
 	Matrix<numericalType> rotationMatrix3D(const double& alpha, const double& beta, const double& gamma) const;
+
+	
+	// resize: Resizes the matrix to the specified dimensions, optionally retaining the old data.
+	//
+	// This function changes the size of the matrix to the new specified row and column counts. If the `fillWithOld`
+	// flag is set to true, the function attempts to retain the existing data in the resized matrix. However, note that
+	// if the new size is smaller than the original size, some data will inevitably be lost. Conversely, if the new size
+	// is larger, the newly created elements will be initialized with the default value of `numericalType`.
+	// Parameters:
+	// - rowNum The new number of rows for the matrix.
+	// - colNum The new number of columns for the matrix.
+	// - fillWithOld A boolean flag indicating whether to retain the old matrix data in the resized matrix. If true,
+	//                    the function will copy the old data to the resized matrix as much as the new size allows. If
+	//                    false, the old data will not be retained, and the resized matrix will be filled with default
+	//                    values. Defaults to false.
+	// Note: If fillWithOld is true and the new size is larger than the original size, the new elements are
+	//       initialized to the default value of `numericalType`.
+	void resize(const size_t& rowNum, const size_t& colNum, bool fillWithOld = false);
 };
 
 #endif /*_MATRIX_HPP*/
