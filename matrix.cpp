@@ -971,6 +971,23 @@ numericalType Matrix<numericalType>::determinant() const
 {
 	if (_row != _col) 
 		throw std::runtime_error("Determinant can only be calculated for square matrices.");
+	
+	// If the matirx is an upper triangle, then the product of the diagonal elements is the determinant
+	if (isUpperTriangle())
+	{
+		unsigned cntr = 0;
+		numericalType det = 1;
+		for (unsigned i = 0; i < _row; i++)
+		{
+			for (unsigned j = 0; j < _col; j++)
+			{
+				det *= matrix[i][j];
+				cntr++;
+			}
+		}
+		det *= (cntr % 2) ? -1 : 1;
+		return det;
+	}
 
 	Matrix<numericalType> L, U;
 	luDecomposition(L, U); // Feltételezve, hogy ez a függvény nem változtatja meg az eredeti mátrixot
@@ -2534,6 +2551,40 @@ Matrix<numericalType> Matrix<numericalType>::rand(const size_t& rowCnt, const si
 	return result;
 }
 
+template<typename numericalType>
+Matrix < numericalType> Matrix<numericalType>::rotationMatrix2D(const double& theta) const
+{
+	Matrix<numericalType> rotM(2, 2);
+
+	rotM[0][0] = static_cast<numericalType>(std::cos(theta));
+	rotM[0][1] = -1 * static_cast<numericalType>(std::sin(theta));
+	rotM[1][0] = static_cast<numericalType>(std::sin(theta));
+	rotM[1][1] = static_cast<numericalType>(std::cos(theta));
+
+	// Rotation matrix should look like something like this:
+	//	[ cos(theta)	-sin(theta)	]
+	//	[ sin(theta)	cos(theta)	]
+
+	return rotM;
+}
+
+template<typename numericalType>
+Matrix<numericalType> Matrix<numericalType>::rotationMatrix3D(const double& alpha, const double& beta, const double& gamma) const
+{
+	Matrix<numericalType> rotM(3, 3);
+
+	rotM[0][0] = static_cast<numericalType>(std::cos(beta) * std::cos(gamma));
+	rotM[0][1] = static_cast<numericalType>(std::sin(alpha) * std::sin(beta)*std::cos(gamma) - std::cos(alpha) * std::sin(gamma));
+	rotM[0][2] = static_cast<numericalType>(std::cos(alpha) * std::sin(beta)*std::cos(gamma) + std::sin(alpha) * std::sin(gamma));
+	rotM[1][0] = static_cast<numericalType>(std::cos(beta) * std::sin(gamma));
+	rotM[1][1] = static_cast<numericalType>(std::sin(alpha) * std::sin(beta) * std::sin(gamma) + std::cos(alpha) * std::cos(gamma));
+	rotM[1][2] = static_cast<numericalType>(std::cos(alpha) * std::sin(beta) * std::sin(gamma) - std::sin(alpha) * std::cos(gamma));
+	rotM[2][0] = static_cast<numericalType>(-1 * std::sin(beta));
+	rotM[2][1] = static_cast<numericalType>(std::sin(alpha) * std::cos(beta));
+	rotM[2][2] = static_cast<numericalType>(std::cos(alpha) * std::cos(beta));
+
+	return rotM;
+}
 
 template class Matrix<unsigned>;
 template class Matrix<int>;

@@ -16,6 +16,24 @@
 #include <omp.h>		// For CPU paralleliaztion
 #include <random>		// For random numbers
 
+// Define parallelization processes, uncomment which CUDA for GPU, OMP for CPU parallelization
+
+//#define _USING_OMP_
+//#define _USING_CUDA_
+
+#ifdef _USING_OMP_
+#ifdef _USING_CUDA_
+#undef _USING_CUDA_
+#endif // _USING_CUDA
+#endif // _USING_OMP_
+
+#ifdef _USING_CUDA_
+#ifdef _USING_OMP_
+#undef _USING_OMP
+#endif // _USING_OMP_
+#endif // _USING_CUDA_
+
+
 using std::vector;
 using MatrixDouble = std::vector<vector<double>>;
 using std::tuple;
@@ -1212,6 +1230,22 @@ public:
 	// Returns: A Matrix object filled with random values.
 	// Note: Uses constexpr, introduced in c++17, make sure your compiler support it.
 	Matrix<numericalType> rand(const size_t& rowCnt, const size_t& colCnt, const double& lowerLimit = 0.0f, const double& upperLimit = 1.0f) const;
+
+	// rotationMatrix2D: Generates a 2D rotation matrix, where the rotation angle is the given theta.
+	// Rotation matrixes are nxn dimension matrixes with a determinant of 1, and they have to be orthogonal.
+	// Parameters:
+	// - theta: The angle for the rotation.
+	// Returns: A 2D Matrix object that is filled with the rotation values.
+	Matrix<numericalType> rotationMatrix2D(const double& theta) const;
+
+	// rotationMatrix3D: Generates a 3D rotation matrix, where the rotation angles are the given angles.
+	// Rotation matrixes are nxn dimension matrixes with a determinant of 1, and they have to be orthogonal.
+	// Parameters:
+	// - alpha: Angle to rotate on z axis.
+	// - beta: Angle to rotate on y axis.
+	// - gamma: Angle to rotate on x axis.
+	// Returns: A 3D matrix filled with the right rotation values, for the 3D rotation.
+	Matrix<numericalType> rotationMatrix3D(const double& alpha, const double& beta, const double& gamma) const;
 };
 
 #endif /*_MATRIX_HPP*/
