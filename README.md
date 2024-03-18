@@ -2,7 +2,7 @@
 
 A versatile, template-based C++ library for matrix operations, designed to support both basic and advanced matrix manipulations. Whether you're working on mathematical problems, data analysis, or developing algorithms that require matrix operations, this library provides a robust set of features to facilitate your work.
 
-The implementation is based on my linear algebra classes, brilliant.org linear algebra classes, and other youtube motivated videos. In the future i'm planning on adding `CUDA` and `OMP` parallelizaiton options. Currently only supporting `Open MP`.
+The implementation is based on my linear algebra classes, brilliant.org linear algebra classes, and other youtube motivated videos. In the future i'm planning on adding `CUDA` and `OMP` parallelizaiton options. Currently only supporting `Open MP`. Currently basic operations, and algorithms are tested and are working, feel free to use them in your projects, if you encounter any bugs, errors, miscalculations feel free to contact me throughout this repository.
 
 ## Features
 
@@ -80,7 +80,3 @@ std::cout << std::endl;
 ## Contributing
 
 Contributions to the Matrix Library are welcome! Whether you're fixing bugs, adding new features, or improving documentation, your help is appreciated. Please open an issue or pull request to get started.
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
