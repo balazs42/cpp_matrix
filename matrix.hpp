@@ -113,7 +113,7 @@ public:
 		matrix = new numericalType * [_row];
 		for (size_t i = 0; i < _row; ++i) 
 		{
-			for (unsigned i = 0; i < _row; i++)
+			for (unsigned j = 0; j < _row; j++)
 				matrix[i] = new numericalType[_col];
 		}
 

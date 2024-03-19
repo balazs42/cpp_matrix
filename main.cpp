@@ -1,71 +1,95 @@
 #include "matrix.hpp"
+#include <iostream>
 
-int main()
-{
-	Matrix<double> P = { {1, 1, 0, 0}, {0, 1, 1, 0}, {0, 0, 1, 1}, {1, 0, 0, 1} };
-	Matrix<double> invP = { {1, -1, 0, 0}, {0, 1, -1, 0}, {0, 0, 1, -1}, {0, 0, 0, 1} };
-	Matrix<double> X = { {1, 1, 1, 1}, {0, 1, 1, 1}, {0, 0, 1, 1,}, {0, 0, 0, 1} };
-	
-	Matrix<double> ans = invP * P * X;
+int main() {
+    // Testing matrix creation and printing
+    std::cout << "Testing matrix creation and printing:" << std::endl;
+    Matrix<double> mat1{ {1, 2, 3}, {4, 5, 6}, {7, 8, 9} };
+    mat1.printToStdOut();
+    // Expected output:
+    // 1 2 3
+    // 4 5 6
+    // 7 8 9
 
-	Matrix<double> matrixA = { {1.0, 32.1}, {10.7, 2.0} };
-	Matrix<double> A = { {0.0, 0.0, 4.7},
-						 {0.0, 2.2, 1.5},
-						 {1.0, 0.0, 3.2}
-						};
+    // Testing addition
+    std::cout << "\nTesting matrix addition:" << std::endl;
+    Matrix<double> mat2{ {9, 8, 7}, {6, 5, 4}, {3, 2, 1} };
+    auto sum = mat1 + mat2;
+    sum.printToStdOut();
+    // Expected output:
+    // 10 10 10
+    // 10 10 10
+    // 10 10 10
+
+    // Testing scalar multiplication
+    std::cout << "\nTesting scalar multiplication:" << std::endl;
+    auto scaled = mat1 * 2.0;
+    scaled.printToStdOut();
+    // Expected output:
+    // 2 4 6
+    // 8 10 12
+    // 14 16 18
+
+    // Testing matrix transpose
+    std::cout << "\nTesting matrix transpose:" << std::endl;
+    auto transposed = mat1.transpose();
+    transposed.printToStdOut();
+    // Expected output:
+    // 1 4 7
+    // 2 5 8
+    // 3 6 9
+
+    // Testing matrix multiplication
+    std::cout << "\nTesting matrix multiplication:" << std::endl;
+    auto product = mat1 * mat2;
+    product.printToStdOut();
+    // Expected output for mat1 * mat2 (assuming standard matrix multiplication):
+    // 30 24 18
+    // 84 69 54
+    // 138 114 90
+
+    // Testing determinant (if applicable)
+    // Please replace with the actual determinant calculation if supported
+    std::cout << "\nTesting determinant (for 2x2 matrix example):" << std::endl;
+    Matrix<double> matDet{ {4, 7}, {2, 6} };
+    std::cout << "Determinant: " << matDet.determinant() << std::endl;
+    // Expected output:
+    // Determinant: 10 (for the 2x2 example matrix)
+
+    // Initial setup: creating a test matrix
+    Matrix<double> A{ {4, 12, -16}, {12, 37, -43}, {-16, -43, 98} };
+    std::cout << "Initial matrix A:" << std::endl;
+    A.printToStdOut();
+
+    // Testing determinant (assuming 3x3 matrix)
+    std::cout << "\nDeterminant of A:" << std::endl;
+    std::cout << A.determinant() << std::endl;
+    // Expected output: 36
+
+    // Testing inverse (if applicable)
+    std::cout << "\nInverse of A:" << std::endl;
+    auto A_inv = A.inverse();
+    A_inv.printToStdOut();
+    // Expected output needs to be calculated based on A.
+    // Testing resizing - expanding A
+    std::cout << "\nExpanding A to 4x4, filling with default values:" << std::endl;
+    A.resize(4, 4, true);
+    A.printToStdOut();
+    // Expected output: Original matrix with an extra row and column of default values (e.g., zeros).
+
+    // Testing resizing - reducing A back to 3x3
+    std::cout << "\nReducing A back to 3x3:" << std::endl;
+    A.resize(3, 3, true); // Assuming true retains old data
+    A.printToStdOut();
+    // Expected output: Should match the initial matrix A.
+
+    // Testing max value and its index
+    std::cout << "\nMaximum value in A and its index:" << std::endl;
+    auto maxVal = A.max();
+    auto maxIdx = A.maxIdx();
+    std::cout << "Max value: " << maxVal << " at (" << maxIdx.first << ", " << maxIdx.second << ")" << std::endl;
+    // Expected output needs to be based on the current state of A.
 
 
-	Matrix<double> matrixB = { {0.0, 3.2}, {11.0, 1.2} };
-	Matrix<double> matrixAtranspose = matrixA.transpose();
-
-	vector<double> gaussA = {2.2, 4.7, 3.3};
-
-	Matrix<double> gaussianA = A.poorGaussian(gaussA);
-	std::cout << "PoorGauss(A)=\n";
-	gaussianA.printToStdOut();
-
-	std::cout << "A=\n";
-	matrixA.printToStdOut();
-
-	std::cout << "A^T=\n";
-	matrixAtranspose.printToStdOut();
-
-	matrixA.swapRows(0, 1);
-
-	std::cout << "\nSwapped\n";
-	matrixA.printToStdOut();
-
-	std::cout << "B=\n";
-	matrixB.printToStdOut();
-
-	matrixA = matrixA + matrixB;
-	
-	matrixA.printToStdOut();
-	
-	Matrix<double> matrixC = matrixA * matrixB;
-	std::cout << "C= A * B=\n";
-	matrixC.printToStdOut();
-
-	Matrix<double> L;
-	Matrix<double> U;
-
-	A.luDecomposition(L, U);
-
-	std::cout << "\nLU decomposition\n";
-	std::cout << "L=\n";
-	L.printToStdOut();
-	std::cout << "U=\n";
-	U.printToStdOut();
-
-
-	std::cout << "Gauss elimination of A=\n";
-	A.printToStdOut();
-	Matrix<double> matrixAgauss = A.gaussJordanElimination();
-	matrixAgauss.printToStdOut();
-
-	std::cout << "\n\n determinant(A)=" << A.determinant() << "\n";
-
-	A.trace();
-
-	return 0;
+    return 0;
 }

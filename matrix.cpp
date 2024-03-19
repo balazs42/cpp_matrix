@@ -15,6 +15,8 @@ Matrix<numericalType> Matrix<numericalType>::operator+(const Matrix<numericalTyp
 		for (unsigned j = 0; j < _col; j++)
 			cpy[i][j] = matrix[i][j] + rhs[i][j];
 
+	if (cpy.isSymmetric())
+		cpy._symmetric = true;
 	return cpy;
 }
 
@@ -32,6 +34,9 @@ Matrix<numericalType> Matrix<numericalType>::operator-(const Matrix<numericalTyp
 	for (unsigned i = 0; i < _row; i++)
 		for (unsigned j = 0; j < _col; j++)
 			cpy[i][j] = matrix[i][j] - rhs[i][j];
+
+	if (cpy.isSymmetric())
+		cpy._symmetric = true;
 
 	return cpy;
 }
@@ -75,6 +80,8 @@ Matrix<numericalType> Matrix<numericalType>::operator*(const Matrix<numericalTyp
 			result[i][j] = sum;
 		}
 	}
+	if (result.isSymmetric())
+		result._symmetric = true;
 	// After filling the result matrix with the correct values, return it.
 	return result;
 }
@@ -91,6 +98,8 @@ Matrix<numericalType> Matrix<numericalType>::operator*(const numericalType& scal
 		for (unsigned j = 0; j < _col; j++)
 			retM[i][j] *= scalar;
 
+	if (retM.isSymmetric())
+		retM._symmetric = true;
 	return retM;
 }
 
@@ -104,6 +113,9 @@ Matrix<numericalType> Matrix<numericalType>::operator-=(const Matrix<numericalTy
 	for (unsigned i = 0; i < _row; i++)
 		for (unsigned j = 0; j < _col; j++)
 			deepCpy[i][j] -= rhs[i][j];
+
+	if (deepCpy.isSymmetric())
+		deepCpy._symmetric = true;
 	return deepCpy;
 }
 
@@ -117,6 +129,9 @@ Matrix<numericalType> Matrix<numericalType>::operator/(const numericalType& scal
 	for (unsigned i = 0; i < _row; i++)
 		for (unsigned j = 0; j < _col; j++)
 			retM[i][j] /= scalar;
+
+	if (retM.isSymmetric())
+		retM._symmetric = true;
 	return retM;
 }
 
@@ -933,41 +948,42 @@ Matrix<numericalType> Matrix<numericalType>::poorGaussian(vector<numericalType> 
 template<typename numericalType>
 Matrix<numericalType> Matrix<numericalType>::gaussJordanElimination() const
 {
-	size_t rowCount = _row;
+	Matrix<numericalType> retM = *this;
+	size_t rowCount = _row; 
 	size_t colCount = _col;
 
-	Matrix<numericalType> retM(rowCount, colCount);
-	for (unsigned i = 0; i < rowCount; i++)
-		for (unsigned j = 0; j < colCount; j++)
-			retM[i][j] = matrix[i][j];
-
-#ifdef _USING_OMP_
-#pragma omp parallel for
-#endif
 	for (size_t col = 0; col < colCount; ++col) 
 	{
-		// Step 1: Find a pivot for the current column
+		// Find pivot in the current column (from col to rowCount to accommodate augmented matrices)
 		size_t pivotRow = col;
-		while (pivotRow < rowCount && retM[pivotRow][col] == 0) 
-			++pivotRow;
-		if (pivotRow == rowCount) continue; // Skip if no pivot found
+		while (pivotRow < rowCount && retM[pivotRow][col] == 0)
+			pivotRow++;
 
-		// Step 2: Swap the pivot row with the current row, if necessary
+		// Check if pivotRow is within the bounds
+		if (pivotRow >= rowCount) 
+			continue; // Skip to the next column if no valid pivot is found
+
+		// Additionally, ensure col is within the original matrix's width if dealing with an augmented matrix
+		if (col >= colCount) 
+			throw std::runtime_error("Gauss-Jordan elimination: column index out of bounds.");
+
+		// Swap current row with pivot row if they are not the same
 		if (pivotRow != col) 
-			retM.swapRows(pivotRow, col);
+			for (size_t j = 0; j < colCount; ++j) 
+				std::swap(retM[col][j], retM[pivotRow][j]);
 
-		// Step 3: Normalize the pivot row
-		numericalType pivotValue = retM[col][col];
-		for (size_t j = 0; j < colCount; ++j) 
+		// Normalize the pivot row
+		numericalType pivotValue = retM[col][col]; // Safe to access after bounds checks
+		for (size_t j = 0; j < colCount; ++j)  // Iterate over columns to normalize pivot row
 			retM[col][j] /= pivotValue;
 
-		// Step 4: Eliminate all other elements in the current column
+		// Eliminate all other entries in the current column
 		for (size_t i = 0; i < rowCount; ++i) 
 		{
 			if (i != col) 
-			{ // Skip the pivot row itself
+			{ // Skip the pivot row
 				numericalType factor = retM[i][col];
-				for (size_t j = 0; j < colCount; ++j) 
+				for (size_t j = 0; j < colCount; ++j)  // Adjust the whole row
 					retM[i][j] -= factor * retM[col][j];
 			}
 		}
@@ -1121,42 +1137,35 @@ template<typename numericalType>
 Matrix<numericalType> Matrix<numericalType>::inverse() const 
 {
 	if (_row != _col) 
-		throw std::runtime_error("Inverse can only be calculated for square matrices.");
+		throw std::runtime_error("Matrix must be square to calculate the inverse.");
 
-	// Step 1: Check if the matrix is invertible (non-zero determinant)
-	numericalType det = determinant();
-	if (det == 0) 
-		throw std::runtime_error("Matrix is not invertible.");
+	// Create augmented matrix: original | identity
+	Matrix<numericalType> augmented(_row, 2 * _col);
 
-	// Step 2: Form the augmented matrix [this | I]
-	size_t n = _row;
-	Matrix<numericalType> augmented(n, 2 * n);
-
-#ifdef _USING_OMP_
-#pragma omp parallel for
-#endif
-	for (size_t i = 0; i < n; ++i) 
-	{
-		for (size_t j = 0; j < n; ++j) 
-			augmented[i][j] = matrix[i][j]; // Copy original matrix
-		
-		augmented[i][n + i] = 1; // Set identity matrix on the right
-	}
-
-	// Step 3: Apply Gauss-Jordan Elimination on the augmented matrix
-	augmented = augmented.gaussJordanElimination();
-
-	// Step 4: Extract the inverse matrix from the augmented matrix
-	Matrix<numericalType> inverse(n, n);
-
-	// After Gauss-elimination the matrix looks like: [I | inverse]
-	// Copy the right half
 #ifdef _USING_OMP_
 #pragma omp parallel for collapse(2)
 #endif
-	for (size_t i = 0; i < n; ++i) 
-		for (size_t j = 0; j < n; ++j) 
-			inverse[i][j] = augmented[i][n + j];
+	for (size_t i = 0; i < _row; ++i) 
+	{
+		for (size_t j = 0; j < _col; ++j) 
+		{
+			augmented.matrix[i][j] = matrix[i][j]; // Original matrix part
+			augmented.matrix[i][j + _col] = (i == j) ? 1 : 0; // Identity matrix part
+		}
+	}
+
+	// Apply Gauss-Jordan Elimination on the augmented matrix
+	augmented = augmented.gaussJordanElimination(); // Ensure this method now handles the full width correctly
+
+	// Extract the inverse from the augmented matrix
+	Matrix<numericalType> inverse(_row, _col);
+
+#ifdef _USING_OMP_
+#pragma omp parallel for collapse(2)
+#endif
+	for (size_t i = 0; i < _row; ++i) 
+		for (size_t j = 0; j < _col; ++j) 
+			inverse.matrix[i][j] = augmented.matrix[i][j + _col]; // Extracting the right half
 
 	return inverse;
 }
@@ -2811,19 +2820,19 @@ void Matrix<numericalType>::resize(const size_t& rowNum, const size_t& colNum, b
 	}
 	else	// Filling in old matrix data, until it is possible
 	{
-		unsigned maxRow = (rowNum > this->_row) ? this->_row : rowNum;
-		unsigned maxCol = (colNum > this->_col) ? this->_col : colNum;
+		unsigned maxRow = (rowNum > _row) ? _row : rowNum;
+		unsigned maxCol = (colNum > _col) ? _col : colNum;
 
 #ifdef _USING_OMP_
 #pragma omp parallel for collapse(2)
 #endif
 		for (unsigned i = 0; i < maxRow; i++)
 			for (unsigned j = 0; j < maxCol; j++)
-				newM[i][j] = this->matrix[i][j];
+				newM[i][j] = matrix[i][j];
+
 		*this = newM;
 	}
 }
-
 
 template class Matrix<unsigned>;
 template class Matrix<int>;
