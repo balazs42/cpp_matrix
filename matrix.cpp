@@ -667,19 +667,19 @@ void Matrix<numericalType>::push_back(vector<numericalType> row)
 template<typename numericalType>
 void Matrix<numericalType>::printToStdOut() const 
 {
-	std::cout << "[";
-	for (unsigned i = 0; i < this->row(); i++)
+	std::cout << "[" << std::endl;
+	for (unsigned i = 0; i < _row; ++i) 
 	{
-		for (unsigned j = 0; j < this->col(); j++)
-			std::cout << matrix[i][j] << "\t";
-		if (i == this->col() - 1)
+		std::cout << " [ "; // Start of a new row
+		for (unsigned j = 0; j < _col; ++j) 
 		{
-			std::cout << "]\n";
-			return;
+			// Print each element with a fixed space or using std::setw for alignment
+			// Adjust std::setw(10) as needed to accommodate the size of your elements
+			std::cout << std::setw(10) << matrix[i][j] << " ";
 		}
-		else
-			std::cout << "\n";
+		std::cout << "]" << std::endl; // End of the row
 	}
+	std::cout << "]" << std::endl; // End of the matrix
 }
 
 template<typename numericalType>
@@ -2832,6 +2832,54 @@ void Matrix<numericalType>::resize(const size_t& rowNum, const size_t& colNum, b
 
 		*this = newM;
 	}
+}
+
+template<typename numericalType>
+Matrix<numericalType> Matrix<numericalType>::filter(const Matrix<numericalType>& filterMatrix) const
+{
+	if (_row < filterMatrix.row() || _col < filterMatrix.col())
+		throw std::runtime_error("Cannot apply filtering, filter matrix too big!");
+
+	unsigned filterRow = filterMatrix.row();
+	unsigned filterCol = filterMatrix.col();
+
+	// Return matrix sizes, which be the filtered matrix
+	unsigned diffRow = _row - filterRow;
+	unsigned diffCol = _col - filterCol;
+	unsigned filteredRow = diffRow + 1;
+	unsigned filteredCol = diffCol + 1;
+
+	Matrix<numericalType> retM(filteredRow, filteredCol);
+
+#ifdef _USING_OMP_
+#pragma omp paralell for collapse(4)
+#endif
+	for (unsigned i = 1; i < diffRow + 2; i++)
+		for (unsigned j = 1; j < diffCol + 2; j++)
+			for (unsigned k = 0; k < filterRow; k++)
+				for (unsigned l = 0; l < filterCol; l++)
+					retM[i - 1][j - 1] += filterMatrix[k][l] * matrix[(i - 1) + k][(j - 1) + l];
+
+	unsigned filterMatrixSize = filterMatrix.size();
+	retM = retM / filterMatrixSize;
+
+	return retM;
+}
+
+template<typename numericalType>
+Matrix<numericalType> Matrix<numericalType>::filter(const vector<vector<numericalType>>& filterMatrix) const
+{
+	Matrix<numericalType> fM(filterMatrix.size(), filterMatrix[0].size());
+	for (unsigned i = 0; i < filterMatrix.size(); i++)
+		for (unsigned j = 0; j < filterMatrix[0].size(); j++)
+			fM[i][j] = filterMatrix[i][j];
+	return filter(fM);
+}
+
+template<typename numericalType>
+unsigned Matrix<numericalType>::size() const
+{
+	return _row * _col;
 }
 
 template class Matrix<unsigned>;

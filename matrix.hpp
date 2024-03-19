@@ -7,7 +7,7 @@
 #include <iostream>		// For deubgging and IO
 #include <exception>	// For exception handling
 #include <cmath>		
-#include <algorithm>	// For iterator algorithms, s.e. find()
+#include <algorithm>	// For iterator algorithms, s.e. find(), max()
 #include <numeric>		// 
 #include <tuple>		// For cooridnates, and tuple types
 #include <iterator>		// For iterators in find() and etc.
@@ -15,6 +15,7 @@
 #include <limits>		// For numerical limits at max and min functions
 #include <omp.h>		// For CPU paralleliaztion
 #include <random>		// For random numbers
+#include <iomanip> // For std::setw
 
 // Define parallelization processes, uncomment which CUDA for GPU, OMP for CPU parallelization
 
@@ -1264,6 +1265,26 @@ public:
 	// Note: If fillWithOld is true and the new size is larger than the original size, the new elements are
 	//       initialized to the default value of `numericalType`.
 	void resize(const size_t& rowNum, const size_t& colNum, bool fillWithOld = false);
+
+	// filter (Matrix version): Filters the current matrix with a given filter matrix.
+	// This function applies a convolution-like operation using the provided filter matrix.
+	// Parameters:
+	// - filterMatrix: A Matrix object representing the filter matrix.
+	// Returns: A new Matrix object that is the result of filtering the current matrix with the filter matrix.
+	Matrix<numericalType> filter(const Matrix<numericalType>& filterMatrix) const;
+
+	// filter (vector version): Filters the current matrix with a given filter matrix represented as a vector of vectors.
+	// This function applies a convolution-like operation using the provided filter matrix.
+	// Parameters:
+	// - filterMatrix: A vector of vectors of numericalType representing the filter matrix.
+	// Returns: A new Matrix object that is the result of filtering the current matrix with the filter matrix.
+	Matrix<numericalType> filter(const vector<vector<numericalType>>& filterMatrix) const;
+
+	// size: Returns the total number of elements in the matrix.
+	// This function calculates the product of the number of rows and columns to determine the total element count.
+	// Parameters: None.
+	// Returns: An unsigned integer representing the total number of elements in the matrix.
+	unsigned size() const;
 };
 
 #endif /*_MATRIX_HPP*/

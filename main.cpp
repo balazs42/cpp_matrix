@@ -1,6 +1,7 @@
 #include "matrix.hpp"
 #include <iostream>
 
+
 int main() {
     // Testing matrix creation and printing
     std::cout << "Testing matrix creation and printing:" << std::endl;
@@ -90,6 +91,43 @@ int main() {
     std::cout << "Max value: " << maxVal << " at (" << maxIdx.first << ", " << maxIdx.second << ")" << std::endl;
     // Expected output needs to be based on the current state of A.
 
+    Matrix<double> X = { {1, 2, 3, 4}, 
+                         {2, 4, 6, 8}, 
+                         {0, 1, 0, 1},
+                         {3, 6, 9, 15}};
 
+    std::cout << "X matrix\n";
+    X.printToStdOut();
+    std::cout << "Poor GaussElmination on {1, 0, 0, 0} on X=\n";
+    X.poorGaussian({ 1, 0, 0, 0 }).printToStdOut();
+    std::cout << "GaussElmination on X=\n";
+    X.gaussJordanElimination().printToStdOut();
+    std::cout << "Inverse of X=\n";
+    X.inverse().printToStdOut();
+
+    Matrix<double> L, U;
+
+    X.luDecomposition(L, U);
+
+    std::cout << "L = \n";
+    L.printToStdOut();
+    std::cout << "U = \n";
+    U.printToStdOut();
+
+    Matrix<double> CNNM = { {-1, -1, -1, -1, -1, -1, -1, -1, -1 },
+                         {-1, 1, -1, -1, -1, -1, -1, 1, -1 },
+                         {-1, -1, 1, -1, -1, -1, 1, -1, -1 },
+                         {-1, -1, -1, 1, -1, 1, -1, -1, -1 },
+                         {-1, -1, -1, -1, 1, -1, -1, -1, -1 },
+                         {-1, -1, -1, 1, -1, 1, -1, -1, -1 },
+                         {-1, -1, 1, -1, -1, -1, 1, -1, -1 },
+                         {-1, 1, -1, -1, -1, -1, -1, 1, -1 },
+                         {-1, -1, -1, -1, -1, -1, -1, -1, -1 }};
+ 
+    Matrix<double> filterM = { {1, -1, -1}, {-1, 1, -1}, {-1, -1, 1} };
+
+    Matrix<double> filteredM = CNNM.filter(filterM);
+
+    filteredM.printToStdOut();
     return 0;
 }
