@@ -12,6 +12,7 @@ The implementation is based on my linear algebra classes, brilliant.org linear a
 - **Utility Functions:** Mean, max, min, and various norms (e.g., Frobenius, L1) calculations.
 - **Parallel Processing Support:** Leverages OpenMP for CPU parallelization to accelerate computation on multicore processors.
 - **Flexibility:** Template-based implementation supports various numerical types, including `int`, `float`, and `double`.
+- **Easy to use:** The function names are directly named after each method, so you cannot mess anything up, also plenty of function overrides are defined, so you can use many data types, for matrix operations.
 
 ## Getting Started
 
