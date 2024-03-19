@@ -1149,8 +1149,8 @@ Matrix<numericalType> Matrix<numericalType>::inverse() const
 	{
 		for (size_t j = 0; j < _col; ++j) 
 		{
-			augmented.matrix[i][j] = matrix[i][j]; // Original matrix part
-			augmented.matrix[i][j + _col] = (i == j) ? 1 : 0; // Identity matrix part
+			augmented[i][j] = matrix[i][j]; // Original matrix part
+			augmented[i][j + _col] = (i == j) ? static_cast<numericalType>(1) : static_cast<numericalType>(0); // Identity matrix part
 		}
 	}
 
@@ -2577,12 +2577,12 @@ numericalType Matrix<numericalType>::mean() const
 	numericalType _mean = {};
 
 #ifdef _USING_OMP_
-#pragma omp parallel for reduction(+:mean)
+#pragma omp parallel for reduction(+:_mean)
 #endif
 	for (unsigned i = 0; i < _row; i++)
 		_mean += meanRow(i);
 
-	return _mean / _row;
+	return (_mean / static_cast<numericalType>(_row));
 }
 
 template<typename numericalType>
@@ -2594,15 +2594,15 @@ numericalType Matrix<numericalType>::meanRow(const size_t& rowIdx) const
 	if (_row == 0)
 		throw std::runtime_error("Cannot calculate mean, if row dimension is 0.");
 
-	numericalType mean = {};
+	numericalType _mean = {};
 
 #ifdef _USING_OMP_
-#pragma omp parallel for reduction(+:mean)
+#pragma omp parallel for reduction(+:_mean)
 #endif
 	for (unsigned i = 0; i < _col; i++)
-		mean += matrix[rowIdx][i];
+		_mean += matrix[rowIdx][i];
 
-	return mean / _col;
+	return (_mean / static_cast<numericalType>(_col));
 }
 
 template<typename numericalType>
@@ -2614,15 +2614,15 @@ numericalType Matrix<numericalType>::meanCol(const size_t& colIdx) const
 	if (_col == 0)
 		throw std::runtime_error("Cannot calculate mean, if row dimension is 0.");
 
-	numericalType mean = {};
+	numericalType _mean = {};
 
 #ifdef _USING_OMP_
-#pragma omp parallel for reduction(+:mean)
+#pragma omp parallel for reduction(+:_mean)
 #endif
 	for (unsigned i = 0; i < _row; i++)
-		mean += matrix[i][colIdx];
+		_mean += matrix[i][colIdx];
 
-	return mean / _row;
+	return (_mean / static_cast<numericalType>(_row));
 }
 
 template<typename numericalType>
@@ -2869,7 +2869,7 @@ Matrix<numericalType> Matrix<numericalType>::filter(const Matrix<numericalType>&
 					retM[i - 1][j - 1] += filterMatrix[k][l] * matrix[(i - 1) + k][(j - 1) + l];
 
 	unsigned filterMatrixSize = filterMatrix.size();
-	retM = retM / filterMatrixSize;
+	retM = (retM / static_cast<numericalType>(filterMatrixSize));
 
 	return retM;
 }
@@ -2994,7 +2994,20 @@ Matrix<numericalType> Matrix<numericalType>::cubed() const
 	return deepCpy * deepCpy;
 }
 
+// Unsigned data types
 template class Matrix<unsigned>;
+template class Matrix<unsigned long>;
+template class Matrix<unsigned long long>;
+
+// Int data types
+template class Matrix<short int>;
 template class Matrix<int>;
+template class Matrix<long int>;
+template class Matrix<long long int>;
+
+// Float data types
 template class Matrix<float>;
+
+// Double data types
 template class Matrix<double>;
+template class Matrix<long double>;
