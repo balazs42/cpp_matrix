@@ -1,18 +1,21 @@
 # Matrix Library for C++
 
-A versatile, template-based C++ library for matrix operations, designed to support both basic and advanced matrix manipulations. Whether you're working on mathematical problems, data analysis, or developing algorithms that require matrix operations, this library provides a robust set of features to facilitate your work.
+A versatile, template-based C++ library for matrix operations, designed to support both basic and advanced matrix manipulations. Whether you're working on mathematical problems, data analysis, developing algorithms that require matrix operations, or implementing neural network models, this library provides a robust set of features to facilitate your work.
 
-The implementation is based on my linear algebra classes, brilliant.org linear algebra classes, and other youtube motivated videos. In the future i'm planning on adding `CUDA` and `OMP` parallelizaiton options. Currently only supporting `Open MP`. Basic operations, and algorithms are tested and are working, feel free to use them in your projects, if you encounter any bugs, errors, miscalculations feel free to contact me throughout this repository.
+The implementation draws inspiration from my linear algebra classes, brilliant.org linear algebra classes, and various educational YouTube videos. In the future, I plan to add `CUDA` and expand `OMP` parallelization options to enhance performance further. Currently, the library supports `Open MP` for efficient CPU parallelization. Basic operations and algorithms have been tested and are functional; feel free to integrate them into your projects. Should you encounter any bugs, errors, or inaccuracies, please do not hesitate to reach out through this repository.
+
+This project is licensed under the GPL 3.0 license, ensuring that all derivatives of this code remain open-source and accessible.
 
 ## Features
 
 - **Basic Operations:** Addition, subtraction, multiplication, and scalar operations.
 - **Advanced Manipulations:** Transpose, determinant calculation, inverse, LU decomposition, and more.
+- **Neural Network Support:** Includes pooling (max and min), and convolution functions tailored for neural network operations such as filtering.
 - **Specialized Functions:** Eigenvalues and eigenvectors calculation, matrix exponentiation, least squares solving, and QR decomposition.
 - **Utility Functions:** Mean, max, min, and various norms (e.g., Frobenius, L1) calculations.
-- **Parallel Processing Support:** Leverages OpenMP for CPU parallelization to accelerate computation on multicore processors.
+- **Parallel Processing Support:** Utilizes OpenMP for efficient CPU parallelization to speed up computations on multicore processors.
 - **Flexibility:** Template-based implementation supports various numerical types, including `int`, `float`, and `double`.
-- **Easy to use:** The function names are directly named after each method, so you cannot mess anything up, also plenty of function overrides are defined, so you can use many data types, for matrix operations.
+- **Ease of Use:** Function names directly reflect their operations, minimizing the likelihood of confusion. Numerous function overrides are available, accommodating a wide range of data types for matrix operations.
 
 ## Getting Started
 
@@ -81,3 +84,6 @@ std::cout << std::endl;
 ## Contributing
 
 Contributions to the Matrix Library are welcome! Whether you're fixing bugs, adding new features, or improving documentation, your help is appreciated. Please open an issue or pull request to get started.
+
+## License
+This project is licensed under the GNU General Public License v3.0 - see the LICENSE.md file for details.
