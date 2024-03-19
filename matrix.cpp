@@ -2914,9 +2914,9 @@ Matrix<numericalType> Matrix<numericalType>::pooling(const unsigned& poolSize, b
 					unsigned curRow = i * poolSize + x;
 					unsigned curCol = j * poolSize + y;
 					if (curRow < _row && curCol < _col && max)
-						maxVal = std::max(val, matrix[curRow][curCol]);
+						val = std::max(val, matrix[curRow][curCol]);
 					else if(curRow < _row && curCol < _col && !max)
-						maxVal = std::min(val, matrix[curRow][curCol]);
+						val = std::min(val, matrix[curRow][curCol]);
 				}
 			}
 			pooledMatrix[i][j] = val;
@@ -2935,6 +2935,63 @@ template<typename numericalType>
 Matrix<numericalType> Matrix<numericalType>::minPooling(const unsigned& poolSize) const 
 {
 	return pooling(poolSize, false);
+}
+
+template<typename numericalType>
+bool Matrix<numericalType>::nLinearlyIndependentEigenVectors() const
+{
+	if (_row != _col)
+		return false;
+
+	// n is the size of the n by n matrix
+	unsigned n = _col;
+
+	unsigned linearlyIndependentCounter = 0;
+	bool independent = false;
+
+	// Eigen vectors of the matrix
+	Matrix<numericalType> egiVectors = eigenvectors();
+
+	for (unsigned i = 0; i < _col; i++)
+	{
+		vector<numericalType> currCol = getColVector(i);
+		independent = true;
+		for (unsigned j = 0; j < _col; j++)
+		{
+			if (i != j)
+			{
+				vector<numericalType> chckCol = getColVector(j);
+				if (!isLinearlyIndependent(currCol, chckCol))
+				{
+					independent = false;
+					break;
+				}
+			}
+		}
+		// If independent is still true, then the whole linearly independent check was done
+		if (independent)
+			linearlyIndependentCounter++;
+	}
+
+	return linearlyIndependentCounter == n;
+}
+
+template<typename numericalType>
+Matrix<numericalType> Matrix<numericalType>::squared() const
+{
+	Matrix<numericalType> deepCpy = *this;
+
+	return deepCpy * deepCpy;
+}
+
+template<typename numericalType>
+Matrix<numericalType> Matrix<numericalType>::cubed() const
+{
+	Matrix<numericalType> deepCpy = *this;
+
+	deepCpy = deepCpy * deepCpy;
+
+	return deepCpy * deepCpy;
 }
 
 template class Matrix<unsigned>;

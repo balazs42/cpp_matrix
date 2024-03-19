@@ -1307,6 +1307,23 @@ public:
 	// - poolSize: The size of the pooling window. This function assumes a square window for simplicity.
 	// Returns: A new Matrix object that is the result of applying min pooling. The dimensions of the resultant matrix are reduced based on the poolSize.
 	Matrix<numericalType> minPooling(const unsigned& poolSize) const;
+
+	// nLinearlyIndependentEigenVectors: Checks if the matrix has n linearly independent eigenvectors or not.
+	// This could be used for checking if a matrix is diagonalizable, but this is only an necessary condition.
+	// Parameters: None.
+	// Returns: True if the matrix has n linearly independent eigenvectors, false otherwise.
+	// Note: Only works for sqaure matrixes currently.
+	bool nLinearlyIndependentEigenVectors() const;
+
+	// squared: Multiplies the matrix with it self.
+	// Parameters: None
+	// Returns: The sqaured matrix.
+	Matrix<numericalType> squared() const;
+
+	// cubed: Multiplies the matrix with it self.
+	// Parameters: None
+	// Returns: The cubed matrix.
+	Matrix<numericalType> cubed() const;
 };
 
 #endif /*_MATRIX_HPP*/
