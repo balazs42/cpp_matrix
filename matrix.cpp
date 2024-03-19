@@ -1478,8 +1478,7 @@ Matrix<numericalType> Matrix<numericalType>::pseudoInverse() const
 	if (isDiagonal())
 	{
 		Matrix<numericalType> retM(_row, _col);
-		for (unsigned i = 0; i < _row; i++)
-			for (unsigned j = 0; j < _col; j++)
+		for (unsigned i = 0, j = 0; i < _row; i++, j++)
 				retM[i][j] = 1 / matrix[i][j];
 		return retM;
 	}
@@ -1652,6 +1651,15 @@ vector<numericalType> Matrix<numericalType>::eigenvaluesVector(int maxIterations
 {
 	if (_row != _col) 
 		throw std::runtime_error("Matrix must be square to compute eigenvalues.");
+
+	// If the matrix is diagonal, the eigenvalues, are on it's diagonal
+	if (isDiagonal())
+	{
+		vector<numericalType> retV;
+		for (unsigned i = 0, j = 0; i < _row; i++, j++)
+			retV.push_back(matrix[i][j]);
+		return retV;
+	}
 
 	size_t n = _row;
 	Matrix<numericalType> A = *this; // Copy of the matrix, as the process is destructive
@@ -2880,6 +2888,53 @@ template<typename numericalType>
 unsigned Matrix<numericalType>::size() const
 {
 	return _row * _col;
+}
+
+template<typename numericalType>
+Matrix<numericalType> Matrix<numericalType>::pooling(const unsigned& poolSize, bool max) const
+{
+	// Calculate new matrix dimensions based on pooling size
+	unsigned newRow = _row / poolSize;
+	unsigned newCol = _col / poolSize;
+	Matrix<numericalType> pooledMatrix(newRow, newCol);
+
+#ifdef _USING_OMP_
+#pragma omp parallel for 
+#endif
+	for (unsigned i = 0; i < newRow; ++i)
+	{
+		for (unsigned j = 0; j < newCol; ++j)
+		{
+			numericalType val = matrix[i * poolSize][j * poolSize];
+			// Find max in the pool
+			for (unsigned x = 0; x < poolSize; ++x)
+			{
+				for (unsigned y = 0; y < poolSize; ++y)
+				{
+					unsigned curRow = i * poolSize + x;
+					unsigned curCol = j * poolSize + y;
+					if (curRow < _row && curCol < _col && max)
+						maxVal = std::max(val, matrix[curRow][curCol]);
+					else if(curRow < _row && curCol < _col && !max)
+						maxVal = std::min(val, matrix[curRow][curCol]);
+				}
+			}
+			pooledMatrix[i][j] = val;
+		}
+	}
+	return pooledMatrix;
+}
+
+template<typename numericalType>
+Matrix<numericalType> Matrix<numericalType>::maxPooling(const unsigned& poolSize) const 
+{
+	return pooling(poolSize, true);
+}
+
+template<typename numericalType>
+Matrix<numericalType> Matrix<numericalType>::minPooling(const unsigned& poolSize) const 
+{
+	return pooling(poolSize, false);
 }
 
 template class Matrix<unsigned>;

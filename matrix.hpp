@@ -1285,6 +1285,28 @@ public:
 	// Parameters: None.
 	// Returns: An unsigned integer representing the total number of elements in the matrix.
 	unsigned size() const;
+
+	// pooling: Performs pooling operation on the matrix to reduce its dimensionality.
+	// This method can perform both max and min pooling based on the max parameter.
+	// Parameters:
+	// - poolSize: The size of the pooling window. This function assumes a square window for simplicity.
+	// - max: A boolean flag indicating the type of pooling operation. If true, max pooling is performed; if false, min pooling is used. Default is max pooling.
+	// Returns: A new Matrix object that is the result of applying the pooling operation. The dimensions of the resultant matrix are reduced based on the poolSize.
+	Matrix<numericalType> pooling(const unsigned& poolSize, bool max = true) const;
+
+	// maxPooling: Performs max pooling operation on the matrix to reduce its dimensionality.
+	// Max pooling slides a window across the matrix and selects the maximum value within the window at each step.
+	// Parameters:
+	// - poolSize: The size of the pooling window. This function assumes a square window for simplicity.
+	// Returns: A new Matrix object that is the result of applying max pooling. The dimensions of the resultant matrix are reduced based on the poolSize.
+	Matrix<numericalType> maxPooling(const unsigned& poolSize) const;
+
+	// minPooling: Performs min pooling operation on the matrix to reduce its dimensionality.
+	// Min pooling slides a window across the matrix and selects the minimum value within the window at each step.
+	// Parameters:
+	// - poolSize: The size of the pooling window. This function assumes a square window for simplicity.
+	// Returns: A new Matrix object that is the result of applying min pooling. The dimensions of the resultant matrix are reduced based on the poolSize.
+	Matrix<numericalType> minPooling(const unsigned& poolSize) const;
 };
 
 #endif /*_MATRIX_HPP*/
