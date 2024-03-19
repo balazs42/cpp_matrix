@@ -21,7 +21,7 @@ This project is licensed under the GPL 3.0 license, ensuring that all derivative
 
 ### Prerequisites
 
-Ensure your compiler supports C++17 (or later) and OpenMP for the best experience with this library. To use OMP you should also `#define _USING_OMP` at the top of the matrix.hpp file.
+Ensure your compiler supports C++17 (or later) and OpenMP for the best experience with this library. To use OMP you should also `#define _USING_OMP_` at the top of the matrix.hpp file.
 
 ### Including the Library
 
