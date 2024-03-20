@@ -1588,7 +1588,7 @@ void Matrix<numericalType>::qrDecomposition(Matrix<numericalType>& Q, Matrix<num
 		}
 
 		// Normalization
-		numericalType norm = static_cast<numericalType>(sqrt(dotProduct(ui, ui)));
+		numericalType norm = static_cast<numericalType>(std::sqrt(dotProduct(ui, ui)));
 		R[i][i] = norm;
 		for (size_t k = 0; k < m; ++k) 
 			Q[k][i] = ui[k] / norm;
@@ -1615,7 +1615,7 @@ void Matrix<numericalType>::reducedQRDecomposition(Matrix<numericalType>& Q, Mat
 #endif
 	for (size_t i = 0; i < r; ++i)  // Iterate up to the rank 'r'
 	{
-		vector<numericalType> ai = this->getColVector(i); // Get the i-th column of A
+		vector<numericalType> ai = getColVector(i); // Get the i-th column of A
 
 		// Step 1: Orthogonalization
 		// Compute the orthogonal component 'ui' of 'ai' relative to previous vectors
@@ -1631,7 +1631,7 @@ void Matrix<numericalType>::reducedQRDecomposition(Matrix<numericalType>& Q, Mat
 
 		// Step 2: Normalization
 		// Normalize 'ui' to form the i-th column of Q
-		numericalType norm = static_cast<numericalType>(sqrt(dotProduct(ui, ui))); // Compute the norm of 'ui'
+		numericalType norm = static_cast<numericalType>(std::sqrt(dotProduct(ui, ui))); // Compute the norm of 'ui'
 		for (size_t k = 0; k < m; ++k) 
 			Q[k][i] = ui[k] / norm; // Normalize and set as i-th column of Q
 
@@ -1639,7 +1639,7 @@ void Matrix<numericalType>::reducedQRDecomposition(Matrix<numericalType>& Q, Mat
 		// Now that 'qi' is computed, fill the corresponding row of R
 		for (size_t j = i; j < n; ++j)  // Only fill upper triangular part
 		{
-			vector<numericalType> aj = this->getColVector(j); // j-th column of A
+			vector<numericalType> aj = getColVector(j); // j-th column of A
 			// Set R[i][j] as the dot product of 'qi' and 'aj'
 			R[i][j] = dotProduct(Q.getColVector(i), aj);
 		}
@@ -2992,6 +2992,52 @@ Matrix<numericalType> Matrix<numericalType>::cubed() const
 	deepCpy = deepCpy * deepCpy;
 
 	return deepCpy * deepCpy;
+}
+
+template<typename numericalType>
+bool Matrix<numericalType>::isStochastic() const
+{
+	numericalType sumRow = {};
+
+	for (unsigned i = 0; i < _row; i++)
+	{
+		sumRow = {};
+		for (unsigned j = 0; j < _col; j++)
+			sumRow += matrix[i][j];
+		// Checking if each row sum up to 1.
+		if (sumRow != static_cast<numericalType>(1))
+			return false;
+	}
+	return true;
+}
+
+template<typename numericalType>
+Matrix<numericalType> Matrix<numericalType>::raiseToPower(const size_t& n) const
+{
+	Matrix<numericalType> M = *this;
+	for (unsigned i = 0; i < n; i++)
+		M = M * M;
+	return M;
+}
+
+template<typename numericalType>
+bool Matrix<numericalType>::isInjective() const
+{
+	// Alternative could be Ker(A) = {0}
+	return rank() == _col;
+}
+
+template<typename numericalType>
+bool Matrix<numericalType>::isSurjective() const
+{
+	Matrix<numericalType> columnSpace = kernel();
+	return columnSpace.col() == _row;
+}
+
+template<typename numericalType>
+bool Matrix<numericalType>::isBijective() const
+{
+	return (isInjective() && isSurjective());
 }
 
 // Unsigned data types

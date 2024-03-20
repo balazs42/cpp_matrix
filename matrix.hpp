@@ -444,6 +444,14 @@ public:
 	// Returns: True if the vectors are linearly independent, false otherwise.
 	bool isLinearlyIndependent(const vector<numericalType>& row1, const vector<numericalType>& row2) const;
 
+	// nLinearlyIndependentEigenVectors: Checks if the matrix has n linearly independent eigenvectors or not.
+	// This could be used for checking if a matrix is diagonalizable, if true is returned, then the matrix
+	// can be diagonalized. If false is returned, other method should be used.
+	// Parameters: None.
+	// Returns: True if the matrix has n linearly independent eigenvectors, false otherwise.
+	// Note: Only works for sqaure matrixes currently. The function canBeDiagonalized performs the same task, but in other faschion.
+	bool nLinearlyIndependentEigenVectors() const;
+
 	// swap: Swaps the contents of two Matrix objects.
 	// This function is a friend of the Matrix class, allowing it to access private members of Matrix objects.
 	// The swap function is useful for implementing the copy-and-swap idiom, particularly in the assignment operator,
@@ -1308,13 +1316,6 @@ public:
 	// Returns: A new Matrix object that is the result of applying min pooling. The dimensions of the resultant matrix are reduced based on the poolSize.
 	Matrix<numericalType> minPooling(const unsigned& poolSize) const;
 
-	// nLinearlyIndependentEigenVectors: Checks if the matrix has n linearly independent eigenvectors or not.
-	// This could be used for checking if a matrix is diagonalizable, but this is only an necessary condition.
-	// Parameters: None.
-	// Returns: True if the matrix has n linearly independent eigenvectors, false otherwise.
-	// Note: Only works for sqaure matrixes currently.
-	bool nLinearlyIndependentEigenVectors() const;
-
 	// squared: Multiplies the matrix with it self.
 	// Parameters: None
 	// Returns: The sqaured matrix.
@@ -1324,6 +1325,36 @@ public:
 	// Parameters: None
 	// Returns: The cubed matrix.
 	Matrix<numericalType> cubed() const;
+
+	// isStochastic: Checks if the matrix is a stochastic matrix.
+	// Stochastic matrixes has a property, where if you sum up each column individually, you get 1 as result for each column.
+	// Parameters: None.
+	// Returns: True if the matrix is stochastic, false otherwise.
+	bool isStochastic() const;
+
+	// raiseToPower: Raises the matrix to power n then returns the matrix.
+	// Parameters: 
+	// - n: The power to the matrix to be raised to.
+	// Returns: The matrix that is raised to the n-th power.
+	Matrix<numericalType> raiseToPower(const size_t& n) const;
+
+	// isInjective: Checks if the matrix is injectve, meaning there is no vector that you multiply
+	// it with, that gives the same result expect for the null vectors. This can be easliy checked,
+	// with the nullity of the matrix = 0. This also means if the rank of the matrix eqauls it's 
+	// number of columns, the matrix is injective.
+	// Parameters: None.
+	// Returns: True if the matrix is injective, false otherwise.
+	bool isInjective() const;
+
+	// isSurjective: Checks if the matrix is surjective, by checking if the col(A) = m.
+	// Parameters: None.
+	// Returns: True if the matrix is surjective, false otherwise.
+	bool isSurjective() const;
+
+	// isBijective: Checks if the matrix is bijective, meaning it is surjective and injective.
+	// Parameters: None.
+	// Returns: True if the matrix is bijective, false otherwise.
+	bool isBijective() const;
 };
 
 #endif /*_MATRIX_HPP*/

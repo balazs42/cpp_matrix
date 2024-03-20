@@ -129,5 +129,41 @@ int main() {
     Matrix<double> filteredM = CNNM.filter(filterM);
 
     filteredM.printToStdOut();
+
+    std::cout << "stoch M=\n";
+
+    Matrix<double> stochM = { {0.0, 0.0, 0.5, 0.0, 1.0},
+                              {0.5, 0.0, 0.0, 0.0, 0.0},
+                              {0.5, 0.5, 0.0, 0.0, 0.0},
+                              {0.0, 0.0, 0.5, 0.0, 0.0},
+                              {0.0, 0.5, 0.0, 1.0, 0.0} };
+
+    stochM.printToStdOut();
+
+    Matrix<double> stochM2 = { {-1.0, 0.5, 0.0, 0.0, 0.5},
+                               {0.5, -1.0, 0.5, 0.0, 0.0},
+                               {0.0, 0.5, -1.0, 0.5, 0.0},
+                               {0.0, 0.0, 0.5, -1.0, 0.5},
+                               {0.5, 0.0, 0.0, 0.5, -1.0},
+                               {1.0, 1.0, 1.0, 1.0, 1.0} };
+
+    vector<double> ans = { 0.0, 0.0, 0.0, 0.0, 0.0 ,1.0 };
+
+    auto poorM = stochM2.gaussJordanElimination();
+
+    std::cout << "Poor gaus on M=\n";
+    poorM.printToStdOut();
+
+    stochM = stochM.raiseToPower(100);
+
+    std::cout << "M^100=\n";
+
+    stochM.printToStdOut();
+
+    Matrix<double> mEigVectors = stochM.eigenvectors();
+
+    std::cout << "Eig vlaues of M=\n";
+    mEigVectors.printToStdOut();
+
     return 0;
 }
