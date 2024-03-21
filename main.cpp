@@ -1,169 +1,130 @@
 #include "matrix.hpp"
 #include <iostream>
-
+#include <vector>
 
 int main() {
-    // Testing matrix creation and printing
-    std::cout << "Testing matrix creation and printing:" << std::endl;
-    Matrix<double> mat1{ {1, 2, 3}, {4, 5, 6}, {7, 8, 9} };
-    mat1.printToStdOut();
-    // Expected output:
-    // 1 2 3
-    // 4 5 6
-    // 7 8 9
+    try {
+        // Matrix Creation
+        Matrix<double> mat1({ {3, -7, 2}, {-3, 5, 1}, {6, -4, 0} });
+        std::cout << "Matrix 1:\n";
+        mat1.printToStdOut();
+        // Expected Output: 
+        // 1 2 3
+        // 4 5 6
+        // 7 8 9
 
-    // Testing addition
-    std::cout << "\nTesting matrix addition:" << std::endl;
-    Matrix<double> mat2{ {9, 8, 7}, {6, 5, 4}, {3, 2, 1} };
-    auto sum = mat1 + mat2;
-    sum.printToStdOut();
-    // Expected output:
-    // 10 10 10
-    // 10 10 10
-    // 10 10 10
+        // Matrix Addition
+        Matrix<double> mat2({ {9, 8, 7}, {6, 5, 4}, {3, 2, 1} });
+        std::cout << "\nMatrix 1 + Matrix 2:\n";
+        (mat1 + mat2).printToStdOut();
+        // Expected Output:
+        // 10 10 10
+        // 10 10 10
+        // 10 10 10
 
-    // Testing scalar multiplication
-    std::cout << "\nTesting scalar multiplication:" << std::endl;
-    auto scaled = mat1 * 2.0;
-    scaled.printToStdOut();
-    // Expected output:
-    // 2 4 6
-    // 8 10 12
-    // 14 16 18
+        // Scalar Multiplication
+        std::cout << "\nMatrix 1 scaled by 2:\n";
+        (mat1 * 2).printToStdOut();
+        // Expected Output:
+        // 2 4 6
+        // 8 10 12
+        // 14 16 18
 
-    // Testing matrix transpose
-    std::cout << "\nTesting matrix transpose:" << std::endl;
-    auto transposed = mat1.transpose();
-    transposed.printToStdOut();
-    // Expected output:
-    // 1 4 7
-    // 2 5 8
-    // 3 6 9
+        // Matrix Multiplication
+        std::cout << "\nMatrix 1 * Matrix 2:\n";
+        (mat1 * mat2).printToStdOut();
+        // Expected output will depend on the contents of mat2. Assuming standard matrix multiplication.
 
-    // Testing matrix multiplication
-    std::cout << "\nTesting matrix multiplication:" << std::endl;
-    auto product = mat1 * mat2;
-    product.printToStdOut();
-    // Expected output for mat1 * mat2 (assuming standard matrix multiplication):
-    // 30 24 18
-    // 84 69 54
-    // 138 114 90
+        // Transpose
+        std::cout << "\nTranspose of Matrix 1:\n";
+        mat1.transpose().printToStdOut();
+        // Expected Output:
+        // 1 4 7
+        // 2 5 8
+        // 3 6 9
 
-    // Testing determinant (if applicable)
-    // Please replace with the actual determinant calculation if supported
-    std::cout << "\nTesting determinant (for 2x2 matrix example):" << std::endl;
-    Matrix<double> matDet{ {4, 7}, {2, 6} };
-    std::cout << "Determinant: " << matDet.determinant() << std::endl;
-    // Expected output:
-    // Determinant: 10 (for the 2x2 example matrix)
+        // Determinant (if applicable)
+        std::cout << "\nDeterminant of Matrix 1: " << mat1.determinant() << std::endl;
+        // Expected output needs calculation.
 
-    // Initial setup: creating a test matrix
-    Matrix<double> A{ {4, 12, -16}, {12, 37, -43}, {-16, -43, 98} };
-    std::cout << "Initial matrix A:" << std::endl;
-    A.printToStdOut();
+        // Inverse (if applicable)
+        std::cout << "\nInverse of Matrix 1:\n";
+        mat1.inverse().printToStdOut();
+        // Expected output needs calculation.
 
-    // Testing determinant (assuming 3x3 matrix)
-    std::cout << "\nDeterminant of A:" << std::endl;
-    std::cout << A.determinant() << std::endl;
-    // Expected output: 36
+        // Eigenvalues and Eigenvectors (if applicable)
+        // Expected output needs implementation and calculation.
 
-    // Testing inverse (if applicable)
-    std::cout << "\nInverse of A:" << std::endl;
-    auto A_inv = A.inverse();
-    A_inv.printToStdOut();
-    // Expected output needs to be calculated based on A.
-    // Testing resizing - expanding A
-    std::cout << "\nExpanding A to 4x4, filling with default values:" << std::endl;
-    A.resize(4, 4, true);
-    A.printToStdOut();
-    // Expected output: Original matrix with an extra row and column of default values (e.g., zeros).
+        // LU Decomposition (if applicable)
+        Matrix<double> L, U;
+        mat1.luDecomposition(L, U);
+        std::cout << "\nL matrix from LU Decomposition of Matrix 1:\n";
+        L.printToStdOut();
+        // Expected L matrix output
+        std::cout << "\nU matrix from LU Decomposition of Matrix 1:\n";
+        U.printToStdOut();
+        // Expected U matrix output
 
-    // Testing resizing - reducing A back to 3x3
-    std::cout << "\nReducing A back to 3x3:" << std::endl;
-    A.resize(3, 3, true); // Assuming true retains old data
-    A.printToStdOut();
-    // Expected output: Should match the initial matrix A.
+        std::cout << "L * U=\n";
+        auto LU = L * U;
+        LU.printToStdOut();
 
-    // Testing max value and its index
-    std::cout << "\nMaximum value in A and its index:" << std::endl;
-    auto maxVal = A.max();
-    auto maxIdx = A.maxIdx();
-    std::cout << "Max value: " << maxVal << " at (" << maxIdx.first << ", " << maxIdx.second << ")" << std::endl;
-    // Expected output needs to be based on the current state of A.
+        // Trace
+        std::cout << "\nTrace of Matrix 1: " << mat1.trace() << std::endl;
+        // Expected Output: Sum of the diagonal elements of mat1.
 
-    Matrix<double> X = { {1, 2, 3, 4}, 
-                         {2, 4, 6, 8}, 
-                         {0, 1, 0, 1},
-                         {3, 6, 9, 15}};
+        // QR Decomposition (if applicable)
+        Matrix<double> Q, R;
+        mat1.qrDecomposition(Q, R);
+        std::cout << "\nQ matrix from QR Decomposition of Matrix 1:\n";
+        Q.printToStdOut();
+        // Expected Q matrix output
+        std::cout << "\nR matrix from QR Decomposition of Matrix 1:\n";
+        R.printToStdOut();
+        // Expected R matrix output
 
-    std::cout << "X matrix\n";
-    X.printToStdOut();
-    std::cout << "Poor GaussElmination on {1, 0, 0, 0} on X=\n";
-    X.poorGaussian({ 1, 0, 0, 0 }).printToStdOut();
-    std::cout << "GaussElmination on X=\n";
-    X.gaussJordanElimination().printToStdOut();
-    std::cout << "Inverse of X=\n";
-    X.inverse().printToStdOut();
+        // Pseudo Inverse (if applicable)
+        std::cout << "\nPseudo Inverse of Matrix 1:\n";
+        mat1.pseudoInverse().printToStdOut();
+        // Expected output depends on the implementation.
 
-    Matrix<double> L, U;
+        Matrix<double> CNNM = { {-1, -1, -1, -1, -1, -1, -1, -1, -1 },
+                                {-1, 1, -1, -1, -1, -1, -1, 1, -1 },
+                                {-1, -1, 1, -1, -1, -1, 1, -1, -1 },
+                                {-1, -1, -1, 1, -1, 1, -1, -1, -1 },
+                                {-1, -1, -1, -1, 1, -1, -1, -1, -1 },
+                                {-1, -1, -1, 1, -1, 1, -1, -1, -1 },
+                                {-1, -1, 1, -1, -1, -1, 1, -1, -1 },
+                                {-1, 1, -1, -1, -1, -1, -1, 1, -1 },
+                                {-1, -1, -1, -1, -1, -1, -1, -1, -1 } };
 
-    X.luDecomposition(L, U);
+        Matrix<double> filterM = { {1, -1, -1}, {-1, 1, -1}, {-1, -1, 1} };
 
-    std::cout << "L = \n";
-    L.printToStdOut();
-    std::cout << "U = \n";
-    U.printToStdOut();
+        Matrix<double> filteredM = CNNM.filter(filterM);
 
-    Matrix<double> CNNM = { {-1, -1, -1, -1, -1, -1, -1, -1, -1 },
-                         {-1, 1, -1, -1, -1, -1, -1, 1, -1 },
-                         {-1, -1, 1, -1, -1, -1, 1, -1, -1 },
-                         {-1, -1, -1, 1, -1, 1, -1, -1, -1 },
-                         {-1, -1, -1, -1, 1, -1, -1, -1, -1 },
-                         {-1, -1, -1, 1, -1, 1, -1, -1, -1 },
-                         {-1, -1, 1, -1, -1, -1, 1, -1, -1 },
-                         {-1, 1, -1, -1, -1, -1, -1, 1, -1 },
-                         {-1, -1, -1, -1, -1, -1, -1, -1, -1 }};
- 
-    Matrix<double> filterM = { {1, -1, -1}, {-1, 1, -1}, {-1, -1, 1} };
+        filteredM.printToStdOut();
 
-    Matrix<double> filteredM = CNNM.filter(filterM);
+        Matrix<double> permutation = { {0, 0, 1, 0}, {0, 1, 0, 0}, {0, 0, 0, 1}, {1, 0, 0, 0} };
 
-    filteredM.printToStdOut();
+        std::cout << "The matrix P is a ptermuattion matrix: " <<( (permutation.isPermutationMatrix()) ? "True " : "False " )<< "Permuation matrix P = \n";
 
-    std::cout << "stoch M=\n";
+        permutation.printToStdOut();
 
-    Matrix<double> stochM = { {0.0, 0.0, 0.5, 0.0, 1.0},
-                              {0.5, 0.0, 0.0, 0.0, 0.0},
-                              {0.5, 0.5, 0.0, 0.0, 0.0},
-                              {0.0, 0.0, 0.5, 0.0, 0.0},
-                              {0.0, 0.5, 0.0, 1.0, 0.0} };
+        std::cout << "Number of inversions in the matrix " << permutation.numInversions() << ".\n";
 
-    stochM.printToStdOut();
+        vector<double> inversions = { 3, 2, 4, 1 };
+        Matrix<double> permM2(4, 4);
 
-    Matrix<double> stochM2 = { {-1.0, 0.5, 0.0, 0.0, 0.5},
-                               {0.5, -1.0, 0.5, 0.0, 0.0},
-                               {0.0, 0.5, -1.0, 0.5, 0.0},
-                               {0.0, 0.0, 0.5, -1.0, 0.5},
-                               {0.5, 0.0, 0.0, 0.5, -1.0},
-                               {1.0, 1.0, 1.0, 1.0, 1.0} };
+        permM2 = permM2.createPermutationMatrixFromInversion(inversions);
 
-    vector<double> ans = { 0.0, 0.0, 0.0, 0.0, 0.0 ,1.0 };
+        std::cout << "Creating inversion matrix form {3, 2, 4, 1}!\n";
 
-    auto poorM = stochM2.gaussJordanElimination();
+        permM2.printToStdOut();
 
-    std::cout << "Poor gaus on M=\n";
-    poorM.printToStdOut();
-
-    stochM = stochM.raiseToPower(100);
-
-    std::cout << "M^100=\n";
-
-    stochM.printToStdOut();
-
-    Matrix<double> mEigVectors = stochM.eigenvectors();
-
-    std::cout << "Eig vlaues of M=\n";
-    mEigVectors.printToStdOut();
+    }
+    catch (const std::exception& e) {
+        std::cerr << "An exception occurred: " << e.what() << std::endl;
+    }
 
     return 0;
 }

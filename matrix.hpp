@@ -1279,6 +1279,7 @@ public:
 	// Parameters:
 	// - filterMatrix: A Matrix object representing the filter matrix.
 	// Returns: A new Matrix object that is the result of filtering the current matrix with the filter matrix.
+	// Note: Filter matrix must be a sqaure matrix, with odd number of rows and columns.
 	Matrix<numericalType> filter(const Matrix<numericalType>& filterMatrix) const;
 
 	// filter (vector version): Filters the current matrix with a given filter matrix represented as a vector of vectors.
@@ -1338,7 +1339,7 @@ public:
 	// Returns: The matrix that is raised to the n-th power.
 	Matrix<numericalType> raiseToPower(const size_t& n) const;
 
-	// isInjective: Checks if the matrix is injectve, meaning there is no vector that you multiply
+	// isInjective: Checks if the matrix represents a injective transformation, meaning there is no vector that you multiply
 	// it with, that gives the same result expect for the null vectors. This can be easliy checked,
 	// with the nullity of the matrix = 0. This also means if the rank of the matrix eqauls it's 
 	// number of columns, the matrix is injective.
@@ -1346,15 +1347,46 @@ public:
 	// Returns: True if the matrix is injective, false otherwise.
 	bool isInjective() const;
 
-	// isSurjective: Checks if the matrix is surjective, by checking if the col(A) = m.
+	// isSurjective: Checks if the matrix represents a surjective transformation, by checking if the col(A) = m.
 	// Parameters: None.
 	// Returns: True if the matrix is surjective, false otherwise.
 	bool isSurjective() const;
 
-	// isBijective: Checks if the matrix is bijective, meaning it is surjective and injective.
+	// isBijective: Checks if the matrix represents a bijective transformation, meaning it is surjective and injective.
 	// Parameters: None.
 	// Returns: True if the matrix is bijective, false otherwise.
 	bool isBijective() const;
+
+	// isPermutationMatrix: Checks if the matrix is a premutation matrix, tis means checking if
+	// each row an column has only one 1 value.
+	// Parameters: None
+	// Returns: True if the matrix is a permutation matrix, flase otherwise.
+	bool isPermutationMatrix() const;
+
+	// numInversions: Returns the number of inversion in the permuation matrix. Returns -1 for non permuation matrixes.
+	// Parameters: None.
+	// Returns: The number of inversions in the permuation matrix.
+	unsigned numInversions() const;
+
+	// createPermutationMatrixFromInversion (vector version): Creates a permuation matrix from the given inversion.
+	// For example inversions = {3, 4, 2, 1} will crate a permutation matrix, where these inversions match up.
+	// Parameters:
+	// - inversions: Vector that is containing the ordered inversions.
+	// Returns: The permutation matrix created from the inversion.
+	Matrix<numericalType> createPermutationMatrixFromInversion(const vector<numericalType>& inversions) const;
+
+	// createPermutationMatrixFromInversion (arary version): Creates a permuation matrix from the given inversion.
+	// For example inversions = {3, 4, 2, 1} will crate a permutation matrix, where these inversions match up.
+	// Parameters:
+	// - inversions: Array that is containing the ordered inversions.
+	// - len: Length of the array.
+	// Returns: The permutation matrix created from the inversion.
+	Matrix<numericalType> createPermutationMatrixFromInversion(numericalType* inversions, const size_t& len) const;
+
+	// isSnake: Checks if the matrix is a snake, meaning it has only one element in each row and column.
+	// Parameters: None.
+	// Returns: True if the matrix is snake, false otherwise.
+	bool isSnake() const;
 };
 
 #endif /*_MATRIX_HPP*/

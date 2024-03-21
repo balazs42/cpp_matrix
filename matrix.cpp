@@ -771,52 +771,31 @@ void Matrix<numericalType>::setToHomogenous(const numericalType& hom)
 }
 
 template<typename numericalType>
-void Matrix<numericalType>::luDecomposition(Matrix<numericalType>& L, Matrix<numericalType>& U) const
+void Matrix<numericalType>::luDecomposition(Matrix<numericalType>& L, Matrix<numericalType>& U) const 
 {
-	Matrix<numericalType> deepCpy = *this;	// Creating deep copy of matrix for which from LU decomposition will be performed
-
-	Matrix<numericalType> pL(_row, _row), pU(_row, _row);			// L and U direction matrices
-
-	if (_row != _col)							// Checking for square matrix
+	if (_row != _col)
 		throw std::runtime_error("Cannot perform LU decomposition on non-square matrix!");
 
-	unsigned n = _row;						// n is the size of the nxn matrix
+	unsigned n = _row;
+	L = Matrix<numericalType>(n, n); // Initialize L and U
+	U = *this; // Copy the current matrix to U
 
-	pL.setToIdentity();						// Setting L to identity, U matrix to zeroes
-	pU.setToZeroMatrix();
+	L.setToIdentity(); // L should start as the identity matrix
 
-#ifdef _USING_OMP_
-#pragma omp parallel for
-#endif
-	for (unsigned i = 0; i < n; i++)
+	for (unsigned i = 0; i < n; ++i) 
 	{
-		// Upper triangle
-		for (unsigned j = i; j < n; j++)
+		for (unsigned j = i + 1; j < n; ++j) 
 		{
-			numericalType sum = {};
-			for (unsigned k = 0; k < i; k++)
-				sum += pL[i][k] * pU[k][j];
-			
-			pU[i][j] = deepCpy[i][j] - sum;
-		}
-		// Lower triangle
-		for (unsigned j = i; j < n; j++)
-		{
-			if (i == j)
-				pL[i][i] = 1;	// Diagonal of L is set to 1
-			else
-			{
-				numericalType sum = {};
-				for (unsigned k = 0; k < i; k++)
-					sum += pL[j][k] * pU[k][i];
+			if (U[i][i] == 0)
+				std::runtime_error("Divison by 0 in LU decomposition!");
 
-				pL[j][i] = (deepCpy[j][i] - sum) / pU[i][i];
-			}
+			numericalType factor = U[j][i] / U[i][i];
+			L[j][i] = factor; // Set the factor in L
+
+			for (unsigned k = i; k < n; ++k) 
+				U[j][k] -= factor * U[i][k]; // Update U by subtracting the factor times the pivot row
 		}
 	}
-
-	L = pL;
-	U = pU;
 }
 
 template<typename numericalType>
@@ -2611,7 +2590,7 @@ numericalType Matrix<numericalType>::meanCol(const size_t& colIdx) const
 	if (colIdx > _col)
 		throw std::runtime_error("Cannot calulate mean for col, since index is out of bounds!");
 
-	if (_col == 0)
+	if (_col <= 0)
 		throw std::runtime_error("Cannot calculate mean, if row dimension is 0.");
 
 	numericalType _mean = {};
@@ -2728,7 +2707,7 @@ pair<size_t, size_t> Matrix<numericalType>::find(const numericalType& f) const
 			}
 		}
 	}
-
+	std::cout << "Cannot find given value inside matrix\n";
 	// Returning {-1, -1}
 	return retPair;
 }
@@ -2819,6 +2798,9 @@ Matrix<numericalType> Matrix<numericalType>::rotationMatrix3D(const double& alph
 template<typename numericalType>
 void Matrix<numericalType>::resize(const size_t& rowNum, const size_t& colNum, bool fillWithOld)
 {
+	if (rowNum < 1 || colNum < 1)
+		throw std::invalid_argument("Cannot resize matrix to zero or negative sizes!");
+
 	Matrix<numericalType> newM(rowNum, colNum);
 
 	// If fill with old is not selected, then returning the new matrix, with all zeroes
@@ -2847,6 +2829,9 @@ Matrix<numericalType> Matrix<numericalType>::filter(const Matrix<numericalType>&
 {
 	if (_row < filterMatrix.row() || _col < filterMatrix.col())
 		throw std::runtime_error("Cannot apply filtering, filter matrix too big!");
+
+	if (filterMatrix.row() % 2 == 0 || filterMatrix.col() != filterMatrix.row())
+		throw std::invalid_argument("Filter must be square with odd dimensions");
 
 	unsigned filterRow = filterMatrix.row();
 	unsigned filterCol = filterMatrix.col();
@@ -3038,6 +3023,121 @@ template<typename numericalType>
 bool Matrix<numericalType>::isBijective() const
 {
 	return (isInjective() && isSurjective());
+}
+
+template<typename numericalType>
+bool Matrix<numericalType>::isPermutationMatrix() const
+{
+	if (_row != _col)
+		return false;
+
+	for (unsigned i = 0; i < _row; i++)
+	{
+		for (unsigned j = 0; j < _col; j++)
+		{
+			if (matrix[i][j] == static_cast<numericalType>(1))
+			{
+				for (unsigned k = 0; k < _row; k++)
+					if (matrix[k][j] != static_cast<numericalType>(0) && k != j)
+						return false;
+				for (unsigned k = 0; k < _col; k++)
+					if (matrix[i][k] != static_cast<numericalType>(0) && k != i)
+						return false;
+			}
+		}
+	}
+
+	return true;
+}
+
+template<typename numericalType>
+unsigned Matrix<numericalType>::numInversions() const
+{
+	int inversionCntr = -1;
+
+	// If the matrix is not a permutation matrix, then returning -1
+	if (isPermutationMatrix()) return inversionCntr;
+
+	inversionCntr = 0;
+
+	for (unsigned i = 0; i < _row - 1; i++)
+	{
+		for (unsigned j = 0; j < _col; j++)
+		{
+			if (matrix[i][j] == static_cast<numericalType>(1))
+			{
+				for (unsigned k = i + 1; k < _row; k++)
+				{
+					for (unsigned l = 0; l < j; l++)
+					{
+						if (matrix[k][l] == static_cast<numericalType>(1))
+							inversionCntr++;
+					}
+				}
+			}
+		}
+	}
+
+	return inversionCntr;
+}
+
+template<typename numericalType>
+Matrix<numericalType> Matrix<numericalType>::createPermutationMatrixFromInversion(const vector<numericalType>& inversions) const
+{
+	numericalType* inv = new numericalType[inversions.size()];
+
+	for (unsigned i = 0; i < inversions.size(); i++)
+		inv[i] = inversions[i];
+
+	Matrix<numericalType> retM = createPermutationMatrixFromInversion(inv, inversions.size());
+
+	delete[] inv;
+
+	return retM;
+}
+
+template<typename numericalType>
+Matrix<numericalType> Matrix<numericalType>::createPermutationMatrixFromInversion(numericalType* inversions, const size_t& len) const
+{
+	Matrix<numericalType> inversionMatrix(len, len);
+	
+	unsigned n = len;
+
+	for (unsigned i = 0; i < n; i++)
+	{
+		unsigned idx = static_cast<unsigned>(inversions[i] - 1);
+
+		for (unsigned j = 0; j < n; ++j)
+			if (idx == j)
+				inversionMatrix[i][j] = 1;
+	}
+
+	return inversionMatrix;
+}
+
+template<typename numericalType>
+bool Matrix<numericalType>::isSnake() const
+{
+	if (_row != _col)
+		return false;
+
+	for (unsigned i = 0; i < _row; i++)
+	{
+		for (unsigned j = 0; j < _col; j++)
+		{
+			if (matrix[i][j] > static_cast<numericalType>(0))
+			{
+				for (unsigned k = 0; k < _row; k++)
+					if (matrix[i][k] != static_cast<numericalType>(0) && j != k)
+						return false;
+				for (unsigned k = 0; k < _col; k++)
+					if (matrix[k][j] != static_cast<numericalType>(0) && i != k)
+						return false;
+			}
+		}
+	}
+
+	return true;
 }
 
 // Unsigned data types
