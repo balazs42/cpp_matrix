@@ -1366,7 +1366,7 @@ public:
 	// numInversions: Returns the number of inversion in the permuation matrix. Returns -1 for non permuation matrixes.
 	// Parameters: None.
 	// Returns: The number of inversions in the permuation matrix.
-	unsigned numInversions() const;
+	int numInversions() const;
 
 	// createPermutationMatrixFromInversion (vector version): Creates a permuation matrix from the given inversion.
 	// For example inversions = {3, 4, 2, 1} will crate a permutation matrix, where these inversions match up.
@@ -1387,6 +1387,39 @@ public:
 	// Parameters: None.
 	// Returns: True if the matrix is snake, false otherwise.
 	bool isSnake() const;
+
+	// isPermutationEvem: Returns if the permutation is even in the permutation matrix.
+	// Parameters: None.
+	// Returns: True if the permutation is even in the matrix, false otherwise.
+	// Note: No checking if the matrix is a permutation matrix.
+	bool isPermutationEven() const;
+
+	// isIdentity: Checks if the matrix is an identity matrix.
+	// Parameters: None.
+	// Returns: True if the matrix is an identity matrix, false otherwise.
+	bool isIdentity() const;
+
+	// normalize: Normalizes the whole matrix to the range of [0 1]
+	// Parameters: None.
+	// Returns: The normalized matrix.
+	Matrix<numericalType> normalize() const;
+
+	// reshape: Reshape the original matrix, to the given sizes.
+	// If the matrix size doesnt match up, then throws an error.
+	// Parameters: 
+	// - mat: Matrix to be reshaped.
+	// - rowSize: The number of rows, in the rehsaped matrix.
+	// - colSize: The number of coluns, in the reshaped matrix.
+	// Returns: The reshaped matrix.
+	Matrix<numericalType> reshape(const Matrix<numericalType>& mat, const size_t& rowSize, const size_t& colSize) const;
+
+	// scale: Scale the matrix's values int the given intervall.
+	// Parameters: 
+	// - mat: Matrix to scale.
+	// - upperBound: The upper bound of the intervall.
+	// - lowerBound: The lower bound of the intervall.
+	// Returns: The scaled matrix.
+	Matrix<numericalType> scale(const numericalType& upperBound, const numericalType& lowerBound) const;
 };
 
 #endif /*_MATRIX_HPP*/

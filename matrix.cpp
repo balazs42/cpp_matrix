@@ -2999,6 +2999,7 @@ bool Matrix<numericalType>::isStochastic() const
 template<typename numericalType>
 Matrix<numericalType> Matrix<numericalType>::raiseToPower(const size_t& n) const
 {
+	// TODO: Diagonalize, then raise to power the diagonal matrix.
 	Matrix<numericalType> M = *this;
 	for (unsigned i = 0; i < n; i++)
 		M = M * M;
@@ -3038,10 +3039,10 @@ bool Matrix<numericalType>::isPermutationMatrix() const
 			if (matrix[i][j] == static_cast<numericalType>(1))
 			{
 				for (unsigned k = 0; k < _row; k++)
-					if (matrix[k][j] != static_cast<numericalType>(0) && k != j)
+					if (matrix[k][j] != static_cast<numericalType>(0) && k != i)
 						return false;
 				for (unsigned k = 0; k < _col; k++)
-					if (matrix[i][k] != static_cast<numericalType>(0) && k != i)
+					if (matrix[i][k] != static_cast<numericalType>(0) && k != j)
 						return false;
 			}
 		}
@@ -3051,12 +3052,12 @@ bool Matrix<numericalType>::isPermutationMatrix() const
 }
 
 template<typename numericalType>
-unsigned Matrix<numericalType>::numInversions() const
+int Matrix<numericalType>::numInversions() const
 {
 	int inversionCntr = -1;
 
 	// If the matrix is not a permutation matrix, then returning -1
-	if (isPermutationMatrix()) return inversionCntr;
+	if (!isPermutationMatrix()) return inversionCntr;
 
 	inversionCntr = 0;
 
@@ -3139,6 +3140,128 @@ bool Matrix<numericalType>::isSnake() const
 
 	return true;
 }
+
+template<typename numericalType>
+bool Matrix<numericalType>::isPermutationEven() const
+{
+	return ((numInversions() % 2) == 0);
+}
+
+template<typename numericalType>
+bool Matrix<numericalType>::isIdentity() const
+{
+	if (_row != _col)
+		return false;
+
+	for (unsigned i = 0; i < _row; i++)
+		for (unsigned j = 0; j < _col; j++)
+			if (matrix[i][j] != static_cast<numericalType>(0) && i != j)
+				return false;
+
+	return true;
+}
+
+template<typename numericalType>
+Matrix<numericalType> Matrix<numericalType>::normalize() const
+{
+	numericalType max = std::numeric_limits<numericalType>::min();
+	numericalType min = std::numeric_limits<numericalType>::max();
+
+	Matrix<numericalType> normalizedMatrix = *this;
+
+#ifdef _USING_OMP_
+#pragma omp parallel for collapse(2)
+#endif
+	for (unsigned i = 0; i < _row; i++)
+	{
+		for (unsigned j = 0; j < _col; j++)
+		{
+			if (normalizedMatrix[i][j] > max)
+				max = normalizedMatrix[i][j];
+			if (normalizedMatrix[i][j] < min)
+				min = normalizedMatrix[i][j];
+		}
+	}
+
+#ifdef _USING_OMP_
+#pragma omp parallel for collapse(2)
+#endif
+	for (unsigned i = 0; i < _row; i++)
+		for (unsigned j = 0; j < _col; j++)
+			normalizedMatrix[i][j] = (normalizedMatrix[i][j] - min) / (max - min);
+
+	return normalizedMatrix;
+}
+
+template<typename numericalType>
+Matrix<numericalType> Matrix<numericalType>::reshape(const Matrix<numericalType>& mat, const size_t& rowSize, const size_t& colSize) const
+{
+	Matrix<numericalType> reshapedMatrix(rowSize, colSize);
+
+	size_t oldSize = mat.size();
+	size_t newSize = reshapedMatrix.size();
+
+	if (oldSize != newSize)
+		throw std::runtime_error("Canno treshape matrix, information will be lost!");
+
+	size_t rwIdx = 0;
+	size_t clIdx = 0;
+
+	unsigned rows = mat.row();
+	unsigned cols = mat.col();
+
+	for (unsigned i = 0; i < rows; i++)
+	{
+		for (unsigned j = 0; j < cols; j++)
+		{
+			numericalType val = mat[i][j];
+
+			if (clIdx == colSize)
+			{
+				rwIdx++;
+				clIdx = 0;
+				reshapedMatrix[rwIdx][clIdx] = val;
+				clIdx++;
+			}
+			else
+			{
+				reshapedMatrix[rwIdx][clIdx] = val;
+				clIdx++;
+			}
+		}
+	}
+
+	return reshapedMatrix;
+}
+
+template<typename numericalType>
+Matrix<numericalType> Matrix<numericalType>::scale(const numericalType& upperBound, const numericalType& lowerBound) const
+{
+	numericalType min = std::numeric_limits<numericalType>::max();
+	numericalType max = std::numeric_limits<numericalType>::min();
+
+	for (unsigned i = 0; i < _row; i++)
+	{
+		for (unsigned j = 0; j < _col; j++)
+		{
+			if (matrix[i][j] > max)
+				max = matrix[i][j];
+			else if (matrix[i][j] < min)
+				min = matrix[i][j];
+		}
+	}
+
+
+	Matrix<numericalType> scaledMatrix(_row, _col);
+
+	// Scaling
+	for (unsigned i = 0; i < _row; i++)		
+		for (unsigned j = 0; j < _col; j++)
+			scaledMatrix[i][j] = (matrix[i][j] - min) / (max - min) * (upperBound - lowerBound) + lowerBound;
+	
+	return scaledMatrix;
+}
+
 
 // Unsigned data types
 template class Matrix<unsigned>;

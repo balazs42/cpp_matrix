@@ -104,7 +104,10 @@ int main() {
 
         filteredM.printToStdOut();
 
-        Matrix<double> permutation = { {0, 0, 1, 0}, {0, 1, 0, 0}, {0, 0, 0, 1}, {1, 0, 0, 0} };
+        Matrix<double> permutation = { {0, 0, 1, 0},
+                                       {0, 1, 0, 0},
+                                       {0, 0, 0, 1},
+                                       {1, 0, 0, 0} };
 
         std::cout << "The matrix P is a ptermuattion matrix: " <<( (permutation.isPermutationMatrix()) ? "True " : "False " )<< "Permuation matrix P = \n";
 
@@ -121,6 +124,24 @@ int main() {
 
         permM2.printToStdOut();
 
+        Matrix<double> resh = { {0, 0, 1.4, 0},
+                                {0, 1.6, 0, 0},
+                                {0, 0, 0, 2.9},
+                                {0.7, 0, 0, 0} };
+
+        std::cout << "Reshaping this 4x4 matrix: \n";
+        resh.printToStdOut();
+
+        std::cout << "To 2x8:\n";
+
+        Matrix<double> reshaped = resh.reshape(resh, 2, 8);
+
+        reshaped.printToStdOut();
+
+        std::cout << "Scaling matrix:\n";
+
+        Matrix<double> scaled = reshaped.scale(7.0, 3.0);
+        scaled.printToStdOut();
     }
     catch (const std::exception& e) {
         std::cerr << "An exception occurred: " << e.what() << std::endl;
