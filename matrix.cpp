@@ -1100,7 +1100,7 @@ numericalType Matrix<numericalType>::determinant() const
 	}
 
 	Matrix<numericalType> L, U;
-	luDecomposition(L, U); // FeltÈtelezve, hogy ez a f¸ggvÈny nem v·ltoztatja meg az eredeti m·trixot
+	luDecomposition(L, U); // Felt√©telezve, hogy ez a f√ºggv√©ny nem v√°ltoztatja meg az eredeti m√°trixot
 
 	numericalType det = 1;
 #ifdef _USING_OMP_
@@ -1896,7 +1896,7 @@ bool Matrix<numericalType>::isLowerTriangle() const
 {
 	// Iterating through upper triangle, to check for non zero elements
 	for (unsigned i = 0; i < _row; i++)
-		for (unsigned j = 1; j < _col; j++)
+		for (unsigned j = i + 1; j < _col; j++)
 			if (matrix[i][j] != 0)return false;
 
 	return true;
