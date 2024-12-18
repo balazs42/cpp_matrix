@@ -310,6 +310,11 @@ public:
 	// Returns: True if the matrices are alike, false otherwise.
 	bool isAlike(const Matrix<numericalType>& other) const;
 
+	// isSquare: Checks if matrix is square matrix
+	// Parameters: None
+	// Returns: True if the matrix is square, false otherwise.
+	bool isSquare() const;
+
 	// isSymmetric: Checks if the matrix is symmetric.
 	// Parameters: None.
 	// Returns: True if the matrix is symmetric, false otherwise.

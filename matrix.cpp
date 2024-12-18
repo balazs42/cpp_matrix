@@ -685,7 +685,7 @@ void Matrix<numericalType>::printToStdOut() const
 template<typename numericalType>
 numericalType Matrix<numericalType>::trace() const 
 {
-	if (_row != _col)
+	if (!isSquare())
 		throw std::runtime_error("Trace cannot be calculated for non square matrices!");
 
 	numericalType sum = {};
@@ -722,7 +722,7 @@ Matrix<numericalType> Matrix<numericalType>::transpose() const
 template<typename numericalType>
 void Matrix<numericalType>::setToIdentity()
 {
-	if (_row != _col)
+	if (!isSquare())
 		throw std::runtime_error("Cannot set non square matrix to identity!");
 
 #ifdef _USING_OMP_
@@ -773,7 +773,7 @@ void Matrix<numericalType>::setToHomogenous(const numericalType& hom)
 template<typename numericalType>
 void Matrix<numericalType>::luDecomposition(Matrix<numericalType>& L, Matrix<numericalType>& U) const 
 {
-	if (_row != _col)
+	if (!isSquare())
 		throw std::runtime_error("Cannot perform LU decomposition on non-square matrix!");
 
 	unsigned n = _row;
@@ -1079,7 +1079,7 @@ unsigned Matrix<numericalType>::rank() const
 template<typename numericalType>
 numericalType Matrix<numericalType>::determinant() const 
 {
-	if (_row != _col) 
+	if (!isSquare()) 
 		throw std::runtime_error("Determinant can only be calculated for square matrices.");
 	
 	// If the matirx is an upper triangle, then the product of the diagonal elements is the determinant
@@ -1115,7 +1115,7 @@ numericalType Matrix<numericalType>::determinant() const
 template<typename numericalType>
 Matrix<numericalType> Matrix<numericalType>::inverse() const 
 {
-	if (_row != _col) 
+	if (!isSquare()) 
 		throw std::runtime_error("Matrix must be square to calculate the inverse.");
 
 	// Create augmented matrix: original | identity
@@ -1187,9 +1187,15 @@ bool Matrix<numericalType>::isAlike(const Matrix<numericalType>& other) const
 }
 
 template<typename numericalType>
+bool Matrix<numericalType>::isSquare() const
+{
+	return (_row == _col) ;
+}
+
+template<typename numericalType>
 bool Matrix<numericalType>::isSymmetric() const
 {
-	if (_row != _col)
+	if (!isSquare())
 		return false;
 
 	for (unsigned i = 0; i < _row; i++)
@@ -1203,7 +1209,8 @@ bool Matrix<numericalType>::isSymmetric() const
 template<typename numericalType>
 bool Matrix<numericalType>::isNegativeSymmetric() const
 {
-	if (_row != _col)return false;
+	if (!isSquare())
+		return false;
 
 	for (unsigned i = 0; i < _row; i++)
 		for (unsigned j = 0; j < _col; j++)
@@ -1215,7 +1222,7 @@ bool Matrix<numericalType>::isNegativeSymmetric() const
 template<typename numericalType>
 bool Matrix<numericalType>::isDiagonal() const
 {
-	if (_row != _col) 
+	if (!isSquare()) 
 		throw std::runtime_error("Matrix must be square for it to be a diagonal matrix.");
 	
 	for (unsigned i = 0; i < _row; i++)
@@ -1230,7 +1237,7 @@ template<typename numericalType>
 bool Matrix<numericalType>::euclidian() const 
 {
 	// Check if the matrix is square
-	if (_row != _col) 
+	if (!isSquare()) 
 		return false; // Transformation must not change the dimensionality of the space
 
 	// Calculate A^T (transpose)
@@ -1631,7 +1638,7 @@ void Matrix<numericalType>::reducedQRDecomposition(Matrix<numericalType>& Q, Mat
 template<typename numericalType>
 vector<numericalType> Matrix<numericalType>::eigenvaluesVector(int maxIterations, numericalType tol) const
 {
-	if (_row != _col) 
+	if (!isSquare()) 
 		throw std::runtime_error("Matrix must be square to compute eigenvalues.");
 
 	// If the matrix is diagonal, the eigenvalues, are on it's diagonal
@@ -1791,7 +1798,7 @@ numericalType Matrix<numericalType>::getLeadingPrincipalMinor(size_t k) const
 template<typename numericalType>
 bool Matrix<numericalType>::isPositiveDefinite() const 
 {
-	if (_row != _col) 
+	if (!isSquare()) 
 		return false;	// Matrix must be square
 	
 	for (size_t k = 1; k <= _row; ++k) 
@@ -1804,7 +1811,7 @@ bool Matrix<numericalType>::isPositiveDefinite() const
 template<typename numericalType>
 bool Matrix<numericalType>::isPositiveSemiDefinite() const 
 {
-	if (_row != _col) 
+	if (!isSquare()) 
 		return false;		// Matrix must be square
 	
 	for (size_t k = 1; k <= _row; ++k) 
@@ -1862,7 +1869,7 @@ vector<pair<numericalType, vector<numericalType>>> Matrix<numericalType>::ownEig
 template<typename numericalType>
 Matrix<numericalType> Matrix<numericalType>::characteristics() const
 {
-	if (_row != _col)
+	if (!isSquare())
 		throw std::runtime_error("Cannot calulate characteristics for non square matrix!");
 
 	Matrix<numericalType> identity(_row, _row);
@@ -1985,7 +1992,7 @@ numericalType Matrix<numericalType>::l1Norm() const
 template<typename numericalType>
 Matrix<numericalType> Matrix<numericalType>::matrixExponential(const size_t& truncSize) const 
 {
-	if (_row != _col) 
+	if (!isSquare()) 
 		throw std::runtime_error("Matrix must be square., cannot raise to power e^A!");
 
 	Matrix<numericalType> result(_row, _col);
@@ -2056,7 +2063,7 @@ size_t Matrix<numericalType>::bandwidth() const
 template<typename numericalType>
 Matrix<numericalType> Matrix<numericalType>::choleskyDecomposition() const 
 {
-	if (_row != _col) 
+	if (!isSquare()) 
 		throw std::runtime_error("Matrix must be square.");
 	
 	if (!isSymmetric()) throw std::runtime_error("Cannot perfrom Cholesky decomposition for non symmetric matrix!");
@@ -2928,7 +2935,7 @@ Matrix<numericalType> Matrix<numericalType>::minPooling(const unsigned& poolSize
 template<typename numericalType>
 bool Matrix<numericalType>::nLinearlyIndependentEigenVectors() const
 {
-	if (_row != _col)
+	if (!isSquare())
 		return false;
 
 	// n is the size of the n by n matrix
@@ -3032,7 +3039,7 @@ bool Matrix<numericalType>::isBijective() const
 template<typename numericalType>
 bool Matrix<numericalType>::isPermutationMatrix() const
 {
-	if (_row != _col)
+	if (!isSquare())
 		return false;
 
 	for (unsigned i = 0; i < _row; i++)
@@ -3122,7 +3129,7 @@ Matrix<numericalType> Matrix<numericalType>::createPermutationMatrixFromInversio
 template<typename numericalType>
 bool Matrix<numericalType>::isSnake() const
 {
-	if (_row != _col)
+	if (!isSquare())
 		return false;
 
 	for (unsigned i = 0; i < _row; i++)
@@ -3153,7 +3160,7 @@ bool Matrix<numericalType>::isPermutationEven() const
 template<typename numericalType>
 bool Matrix<numericalType>::isIdentity() const
 {
-	if (_row != _col)
+	if (!isSquare())
 		return false;
 
 	for (unsigned i = 0; i < _row; i++) {
