@@ -1215,19 +1215,14 @@ bool Matrix<numericalType>::isNegativeSymmetric() const
 template<typename numericalType>
 bool Matrix<numericalType>::isDiagonal() const
 {
-	bool notFull = false;
+	if (_row != _col) 
+		throw std::runtime_error("Matrix must be square for it to be a diagonal matrix.");
+	
 	for (unsigned i = 0; i < _row; i++)
-	{
 		for (unsigned j = 0; j < _col; j++)
-		{
-			if (notFull && i == j && matrix[i][j] != 0)	// Check case if diagonal elements contain zero
+			if (i != j && matrix[i][j] != 0)	// If element is not on the diagonal returning false
 				return false;
-			else if (i != j && matrix[i][j] != 0)	// If element is not on the diagonal returning false
-				return false;
-			else if (i == j && matrix[i][j] == 0)
-				notFull = true;
-		}
-	}
+		
 	return true;
 }
 
@@ -1452,13 +1447,21 @@ Matrix<numericalType> Matrix<numericalType>::pseudoInverse() const
 	// If matrix is orthogonal then O^+=O^T
 	if (isThisOrthogonal()) return transpose();
 
-	// If the matrix is dagonal and aii != 0
+	// If the matrix is diagonal and aii != 0
 	// Then each element should be rasied to (-1) power
-	if (isDiagonal())
+	bool zeroDiagonalEntry = false;
+	for(unsigned i = 0; i < _row; i++) {
+		if( matrix[i][i] == 0 ) {
+			zeroDiagonalEntry = true;
+			break;
+		}
+	}
+	
+	if (!zeroDiagonalEntry && isDiagonal())
 	{
 		Matrix<numericalType> retM(_row, _col);
-		for (unsigned i = 0, j = 0; i < _row; i++, j++)
-				retM[i][j] = 1 / matrix[i][j];
+		for (unsigned i = 0; i < _row; i++)
+				retM[i][i] = 1 / matrix[i][i];
 		return retM;
 	}
 
@@ -1635,8 +1638,8 @@ vector<numericalType> Matrix<numericalType>::eigenvaluesVector(int maxIterations
 	if (isDiagonal())
 	{
 		vector<numericalType> retV;
-		for (unsigned i = 0, j = 0; i < _row; i++, j++)
-			retV.push_back(matrix[i][j]);
+		for (unsigned i = 0; i < _row; i++)
+			retV.push_back(matrix[i][i]);
 		return retV;
 	}
 
