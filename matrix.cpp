@@ -3156,10 +3156,14 @@ bool Matrix<numericalType>::isIdentity() const
 	if (_row != _col)
 		return false;
 
-	for (unsigned i = 0; i < _row; i++)
-		for (unsigned j = 0; j < _col; j++)
-			if (matrix[i][j] != static_cast<numericalType>(0) && i != j)
+	for (unsigned i = 0; i < _row; i++) {
+		for (unsigned j = 0; j < _col; j++) {
+			if (i != j && matrix[i][j] != static_cast<numericalType>(0))
 				return false;
+			if (i == j && matrix[i][j] != static_cast<numericalType>(1))
+				return false;
+		}
+	}
 
 	return true;
 }
