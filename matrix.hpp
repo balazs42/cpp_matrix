@@ -315,6 +315,23 @@ public:
 	// Returns: True if the matrix is square, false otherwise.
 	bool isSquare() const;
 
+	// areIndicesOutOfBound: checks if row index is out of bounds
+	// Parameters: rowIdx: Index of the row.
+	// Returns: True if the indices are out of bounds, false otherwise.
+	bool isRowIdxOutOfBound(const size_t& rowIdx) const;
+
+	// areIndicesOutOfBound: checks if col index is out of bounds
+	// Parameters: colIdx: Index of the col.
+	// Returns: True if the indices are out of bounds, false otherwise.
+	bool isColIdxOutOfBound(const size_t& colIdx) const;
+
+	// areIndicesOutOfBound: checks if row and col indices are out of bounds
+	// Parameters: 
+	// - rowIdx: Index of the row.
+	// - colIdx: Index of the col.
+	// Returns: True if the indices are out of bounds, false otherwise.
+	bool areIndicesOutOfBound(const size_t& rowIdx, const size_t& colIdx) const;
+
 	// isSymmetric: Checks if the matrix is symmetric.
 	// Parameters: None.
 	// Returns: True if the matrix is symmetric, false otherwise.
