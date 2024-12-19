@@ -1036,6 +1036,11 @@ public:
 	vector<pair<numericalType, numericalType*>> ownEigenPairs() const;
 	vector<pair<numericalType, vector<numericalType>>> ownEigenPairsVector() const;
 
+	// spectralRadius: Computes max{|eigenvalue|} = maximum of absoulte value(magnitude) of eigenvalues.
+	// Parameter: None.
+	// Returns: returns max{|eigenvalue|} = maximum of absoulte value(magnitude) of eigenvalues.
+	numericalType spectralRadius() const;
+
 	// characteristics: Computes the characteristic polynomial of the matrix. Calculated with using x(lambda) = det(A - lamdba * I).
 	// Parameters: None.
 	// Returns: A Matrix object representing the coefficients of the characteristic polynomial.

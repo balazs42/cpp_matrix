@@ -1664,9 +1664,13 @@ vector<numericalType> Matrix<numericalType>::eigenvaluesVector(int maxIterations
 	// If the matrix is diagonal, the eigenvalues, are on it's diagonal
 	if (isDiagonal())
 	{
-		vector<numericalType> retV;
-		for (unsigned i = 0; i < _row; i++)
-			retV.push_back(matrix[i][i]);
+		std::vector<numericalType> eigenvalues(n);
+		for (size_t i = 0; i < _row; i++)
+			eigenvalues[i] = matrix[i][i];
+		
+		// Sort the diagonal eigenvalues in decreasing order
+        std::sort(eigenvalues.begin(), eigenvalues.end(), std::greater<numericalType>());
+
 		return retV;
 	}
 
@@ -1707,6 +1711,9 @@ vector<numericalType> Matrix<numericalType>::eigenvaluesVector(int maxIterations
 	std::vector<numericalType> eigenvalues(n);
 	for (size_t i = 0; i < n; ++i) 
 		eigenvalues[i] = A[i][i];
+
+	// Sort the eigenvalues in decreasing order
+    std::sort(eigenvalues.begin(), eigenvalues.end(), std::greater<numericalType>());
 
 	return eigenvalues;
 }
@@ -1881,6 +1888,17 @@ vector<pair<numericalType, vector<numericalType>>> Matrix<numericalType>::ownEig
 	}
 
 	return retVec;
+}
+
+template<typename numericalType>
+numericalType Matrix<numericalType>::spectralRadius() const
+{
+	numericalType ret = static_cast<numericalType>(0);
+	vector<numericalType> eigValVector = eigenvaluesVector();
+
+	ret = static_cast<numericalType>(std::fabs(static_cast<double>(eigValVector[0])));
+
+	return ret;
 }
 
 template<typename numericalType>
