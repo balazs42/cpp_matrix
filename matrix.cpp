@@ -138,7 +138,7 @@ Matrix<numericalType> Matrix<numericalType>::operator/(const numericalType& scal
 template<typename numericalType>
 void Matrix<numericalType>::swapRows(const size_t& row1Idx, const size_t& row2Idx)
 {
-	if (row1Idx > _row || row2Idx > _row)
+	if ( isRowIdxOutOfBound(row1Idx) || isRowIdxOutOfBound(row2Idx) )
 		throw std::runtime_error("Invalid row indexes for swapping!");
 
 	// Swap without new allocation
@@ -150,7 +150,7 @@ void Matrix<numericalType>::swapRows(const size_t& row1Idx, const size_t& row2Id
 template<typename numericalType>
 void Matrix<numericalType>::swapCols(const size_t& col1Idx, const size_t& col2Idx)
 {
-	if (col1Idx >= _col || col2Idx >= _col) 
+	if ( isColIdxOutOfBound(col1Idx) || isColIdxOutOfBound(col2Idx) )
 		throw std::runtime_error("Column index out of bounds.");
 
 	for (size_t i = 0; i < _row; ++i) 
@@ -160,7 +160,7 @@ void Matrix<numericalType>::swapCols(const size_t& col1Idx, const size_t& col2Id
 template<typename numericalType>
 numericalType Matrix<numericalType>::normalizeRowForPosition(const size_t& rowIdx, const size_t& oneIdx)
 {
-	if (rowIdx > _row || oneIdx > _col)
+	if ( areIndicesOutOfBound(rowIdx, oneIdx) )
 		throw std::runtime_error("Cannot normalize row, indexes out of bounds!");
 
 	numericalType commonDenominator = matrix[rowIdx][oneIdx];
@@ -180,7 +180,7 @@ numericalType Matrix<numericalType>::normalizeRowForPosition(const size_t& rowId
 template<typename numericalType>
 void Matrix<numericalType>::scalarMultiplyRow(const numericalType& scalar, const size_t& rowIdx)
 {
-	if (rowIdx >= _row)
+	if ( isRowIdxOutOfBound(rowIdx) )
 		throw std::runtime_error("Cannot scalar multiply row, row index out of bounds!");
 #ifdef _USING_OMP_
 #pragma omp parallel for
@@ -192,7 +192,7 @@ void Matrix<numericalType>::scalarMultiplyRow(const numericalType& scalar, const
 template<typename numericalType>
 void Matrix<numericalType>::scalarMultiplyCol(const numericalType& scalar, const size_t& colIdx)
 {
-	if (colIdx >= _col)
+	if ( isColIdxOutOfBound(colIdx) )
 		throw std::runtime_error("Cannot scalar multiply col, col index out if bounds!");
 #ifdef _USING_OMP_
 #pragma omp parallel for
@@ -204,7 +204,7 @@ void Matrix<numericalType>::scalarMultiplyCol(const numericalType& scalar, const
 template<typename numericalType>
 void Matrix<numericalType>::addRow(const size_t& row, const size_t& rowToAdd, const numericalType sign, const numericalType howManyTimes)
 {
-	if (row > _row || rowToAdd > _row)
+	if ( isRowIdxOutOfBound(row) || isRowIdxOutOfBound(rowToAdd) )
 		throw std::runtime_error("Cannot add rows, since they are out of bounds!");
 
 	// Adding row
@@ -218,7 +218,7 @@ void Matrix<numericalType>::addRow(const size_t& row, const size_t& rowToAdd, co
 template<typename numericalType>
 void Matrix<numericalType>::addRow(const size_t& row, vector<numericalType> rowToAdd, const numericalType sign, const numericalType howManyTimes)
 {
-	if (row > _row || rowToAdd.size() > _col)
+	if ( isRowIdxOutOfBound(row) || rowToAdd.size() != _col )
 		throw std::runtime_error("Cannot add row since it is out of bounds, or size doesnt match!");
 
 #ifdef _USING_OMP_
@@ -285,7 +285,7 @@ vector<numericalType> Matrix<numericalType>::subtractRowVector(const vector<nume
 template<typename numericalType>
 numericalType Matrix<numericalType>::dotProduct(const size_t& row1, const size_t& row2) const
 {
-	if (row1 >= _row || row2 >= _row)
+	if ( isRowIdxOutOfBound(row1) || isRowIdxOutOfBound(row2) )
 		throw std::runtime_error("Cannot calulate dotproduct because indexes are out of bounds!");
 
 	if (row1 == row2)
@@ -308,7 +308,7 @@ numericalType Matrix<numericalType>::dotProduct(numericalType* vec, const size_t
 	if (size != _col)
 		throw std::runtime_error("Cannot perform dot product, size doesnt match, vector out of bounds!");
 
-	if (rowIdx >= _row)
+	if ( isRowIdxOutOfBound(rowIdx) )
 		throw std::runtime_error("Cannot perform dot product, row index out of bounds!");
 
 	numericalType prod = {};
@@ -328,7 +328,7 @@ numericalType Matrix<numericalType>::dotProduct(const vector<numericalType>& vec
 	if(vec.size() != _col)
 		throw std::runtime_error("Cannot perform dot product, size doesnt match, vector out of bounds!");
 
-	if (rowIdx >= _row)
+	if ( isRowIdxOutOfBound(rowIdx) )
 		throw std::runtime_error("Cannot perform dot product, row index out of bounds!");
 
 	numericalType prod = {};
@@ -381,7 +381,7 @@ numericalType Matrix<numericalType>::dotProduct(numericalType* vec1, const size_
 template<typename numericalType>
 numericalType Matrix<numericalType>::rowAbs(const size_t& idx) const
 {
-	if (idx >= _row)
+	if ( isRowIdxOutOfBound(idx) )
 		throw std::runtime_error("Row index out of bounds, cannot calculate absoullte!");
 
 	numericalType abs = {};
@@ -429,7 +429,7 @@ numericalType Matrix<numericalType>::rowAbs(vector<numericalType> row) const
 template<typename numericalType>
 numericalType Matrix<numericalType>::colAbs(const size_t& idx) const
 {
-	if (idx >= _col)
+	if ( isColIdxOutOfBound(idx) )
 		throw std::runtime_error("Columns index out of bounds, cannot calculate absolute!");
 
 	numericalType abs = {};
@@ -446,7 +446,7 @@ numericalType Matrix<numericalType>::colAbs(const size_t& idx) const
 template<typename numericalType>
 numericalType Matrix<numericalType>::distanceFromRow(const size_t& distanceFromIdx, const size_t& idx) const
 {
-	if (distanceFromIdx >= _row || idx >= _row)
+	if ( isRowIdxOutOfBound(distanceFromIdx) || isRowIdxOutOfBound(idx) )
 		throw std::runtime_error("Cannout calculate distance indexes out of bounds!");
 
 	if (distanceFromIdx == idx) return 0;
@@ -463,12 +463,12 @@ numericalType Matrix<numericalType>::distanceFromRow(const size_t& distanceFromI
 }
 
 template<typename numericalType>
-numericalType Matrix<numericalType>::distanceFromRow(numericalType* otherROw, const size_t& rowSize, const size_t& distanceFromIdx) const
+numericalType Matrix<numericalType>::distanceFromRow(numericalType* otherRow, const size_t& rowSize, const size_t& distanceFromIdx) const
 {
-	if (rowSize >= _col)
-		throw std::runtime_error("Row too long, cannot compute distance!");
+	if (rowSize != _col)
+		throw std::runtime_error("Row size does not match, cannot compute distance!");
 
-	if (distanceFromIdx >= _row)
+	if ( isRowIdxOutOfBoun(distanceFromIdx) )
 		throw std::runtime_error("Cannot calculate distance from row, index out of bounds!");
 
 	numericalType dist = {};
@@ -477,7 +477,7 @@ numericalType Matrix<numericalType>::distanceFromRow(numericalType* otherROw, co
 #pragma omp parallel for reduction(+:dist)
 #endif
 	for (unsigned i = 0; i < _col; i++)
-		dist += (matrix[distanceFromIdx][i] - otherROw[i]) * (matrix[distanceFromIdx][i] - otherROw[i]);
+		dist += (matrix[distanceFromIdx][i] - otherRow[i]) * (matrix[distanceFromIdx][i] - otherRow[i]);
 
 	return static_cast<numericalType>(std::sqrt(dist));
 }
@@ -488,7 +488,7 @@ numericalType Matrix<numericalType>::distanceFromRow(const vector<numericalType>
 	if (otherRow.size() != _col)
 		throw std::runtime_error("Vector too long, cannot calculate distance!");
 
-	if (distanceFromIdx >= _row)
+	if ( isRowIdxOutOfBound(distanceFromIdx) )
 		throw std::runtime_error("Cannot calculate distance, index out of bounds!");
 
 	// Copying data
@@ -512,7 +512,7 @@ numericalType Matrix<numericalType>::distanceFromRow(const vector<numericalType>
 template<typename numericalType>
 numericalType Matrix<numericalType>::distanceFromCol(const size_t& distanceFromIdx, const size_t& idx) const
 {
-	if (distanceFromIdx >= _col || idx >= _col)
+	if ( isColIdxOutOfBound(distanceFromIdx) || isColIdxOutOfBound(idx) )
 		throw std::runtime_error("Cannot calculate distance between rows, since indexes are out of bounds!");
 
 	numericalType dist = {};
@@ -532,7 +532,7 @@ numericalType Matrix<numericalType>::distanceFromCol(numericalType* otherCol, co
 	if (colSize != _row)
 		throw std::runtime_error("Distance from column cannot be calculated, vector too long!");
 
-	if (distanceFromIdx >= _col)
+	if ( isColIdxOutOfBound(idx) )
 		throw std::runtime_error("Cannot calculate distance, since index is out of bounds!");
 
 	numericalType dist = {};
@@ -549,10 +549,10 @@ numericalType Matrix<numericalType>::distanceFromCol(numericalType* otherCol, co
 template<typename numericalType>
 numericalType Matrix<numericalType>::distanceFromCol(const vector<numericalType>& otherCol, const size_t& distanceFromIdx) const
 {
-	if (otherCol.size() >= _row)
-		throw std::runtime_error("Vector too long, cannot calculate distance!");
+	if (otherCol.size() != _row)
+		throw std::runtime_error("Vector size does not match, cannot calculate distance!");
 
-	if (distanceFromIdx >= _col)
+	if ( isColIdxOutOfBound(distanceFromIdx) )
 		throw std::runtime_error("Cannot calculate distance, since index is out of bounds!");
 
 	numericalType* other_col = new numericalType[_row];
@@ -670,14 +670,14 @@ void Matrix<numericalType>::printToStdOut() const
 	std::cout << "[" << std::endl;
 	for (unsigned i = 0; i < _row; ++i) 
 	{
-		std::cout << " [ "; // Start of a new row
+		std::cout << "\t[ "; // Start of a new row
 		for (unsigned j = 0; j < _col; ++j) 
 		{
 			// Print each element with a fixed space or using std::setw for alignment
 			// Adjust std::setw(10) as needed to accommodate the size of your elements
 			std::cout << std::setw(10) << matrix[i][j] << " ";
 		}
-		std::cout << "]" << std::endl; // End of the row
+		std::cout << std::setw(10) << "]" << std::endl; // End of the row
 	}
 	std::cout << "]" << std::endl; // End of the matrix
 }
@@ -851,7 +851,8 @@ Matrix<numericalType> Matrix<numericalType>::organizeDecreasing() const
 template<typename numericalType>
 Matrix<numericalType> Matrix<numericalType>::poorGaussian(numericalType* rhs, const size_t& size) const
 {
-	if (size != _row) throw std::runtime_error("Cannot solve with poor gaussian, vector not right size!");
+	if (size != _row) 
+		throw std::runtime_error("Cannot solve with poor gaussian, vector not right size!");
 
 	// Organize matrix to decreasing order
 	Matrix<numericalType> organized = organizeDecreasing();
@@ -907,7 +908,8 @@ Matrix<numericalType> Matrix<numericalType>::poorGaussian(numericalType* rhs, co
 template<typename numericalType>
 Matrix<numericalType> Matrix<numericalType>::poorGaussian(vector<numericalType> rhs) const
 {
-	if(rhs.size() != _row) throw std::runtime_error("Cannot solve with poor gaussian, vector not right size!");
+	if(rhs.size() != _row) 
+		throw std::runtime_error("Cannot solve with poor gaussian, vector not right size!");
 
 	numericalType* tmpRhs = new numericalType[_row];
 
@@ -1190,6 +1192,24 @@ template<typename numericalType>
 bool Matrix<numericalType>::isSquare() const
 {
 	return (_row == _col) ;
+}
+
+template<typename numericalType>
+bool Matrix<numericalType>::isRowIdxOutOfBound(const size_t& rowIdx) const
+{
+	return ( rowIdx < 0 || rowIdx >= _row ) ;
+}
+
+template<typename numericalType>
+bool Matrix<numericalType>::isColIdxOutOfBound(const size_t& colIdx) const
+{
+	return ( colIdx < 0 || colIdx >= _col ) ;
+}
+
+template<typename numericalType>
+bool Matrix<numericalType>::areIndicesOutOfBound(const size_t& rowIdx, const size_t& colIdx) const
+{
+	return ( rowIdx < 0 || rowIdx >= _row || colIdx < 0 || colIdx >= _col ) ;
 }
 
 template<typename numericalType>
@@ -1746,7 +1766,7 @@ Matrix<numericalType> Matrix<numericalType>::eigenvectors() const
 template<typename numericalType>
 Matrix<numericalType> Matrix<numericalType>::getSubMatrix(const size_t& rowEnd, const size_t& colEnd) const
 {
-	if (rowEnd >= _row || colEnd >= _col)
+	if ( areIndicesOutOfBound(rowEnd, colEnd) )
 		throw std::runtime_error("Cannot return submatrix, indexes out of bounds!");
 
 	Matrix<numericalType> subM(rowEnd, colEnd);
@@ -1764,11 +1784,8 @@ Matrix<numericalType> Matrix<numericalType>::getSubMatrix(const size_t& rowEnd, 
 template<typename numericalType>
 Matrix<numericalType> Matrix<numericalType>::getSubMatrix(const size_t& rowStart, const size_t& rowEnd, const size_t& colStart, const size_t& colEnd) const
 {
-	if (rowStart < 0 || colStart < 0)
-		throw std::runtime_error("Cannot index matrix with negative indexes, hence cannot return submatrix!");
-
-	if (rowEnd >= _row || colEnd >= _col)
-		throw std::runtime_error("Cannot return submatrix indexes out of bounds!");
+	if ( areIndicesOutOfBound(rowEnd, colEnd) )
+		throw std::runtime_error("Cannot return submatrix, indexes out of bounds!");
 
 	Matrix<numericalType> subM(rowEnd - rowStart, colEnd - colStart);
 
@@ -1785,7 +1802,7 @@ Matrix<numericalType> Matrix<numericalType>::getSubMatrix(const size_t& rowStart
 template<typename numericalType>
 numericalType Matrix<numericalType>::getLeadingPrincipalMinor(size_t k) const
 {
-	if (k > _row || k > _col)
+	if (k < 0 || k > _row || k > _col)
 		throw std::invalid_argument("k is out of bounds, cannot return leading principal minor!");
 	
 	// Extract the submatrix from the top-left corner up to (k, k)
@@ -2141,13 +2158,13 @@ bool Matrix<numericalType>::isColumnVector(const vector<numericalType>& vec) con
 		throw std::runtime_error("Cannot compare rows, since the given vector is not the right size!");
 
 	// Check if the given vector is 1:1 in the column space
-	for (unsigned i = 0; i < _row; i++)
+	for (unsigned i = 0; i < _col; i++)
 	{
 		if (matrix[0][i] != vec[0])continue;
 		else
 		{
 			unsigned j = 0;
-			for (; j < _col; j++)
+			for (; j < _row; j++)
 				if (matrix[j][i] != vec[j]) break;
 
 			if (j == _col)return true;
@@ -2170,7 +2187,7 @@ bool Matrix<numericalType>::isColumnVector(const vector<numericalType>& vec) con
 template<typename numericalType>
 bool Matrix<numericalType>::isColumnVector(numericalType* vec, const size_t& size) const
 {
-	if (size != _col)
+	if (size != _row)
 		throw std::runtime_error("Vector size doesnt match, cannot compare columns!");
 	vector<numericalType> col;
 	for (unsigned i = 0; i < size; i++)
@@ -2182,7 +2199,7 @@ bool Matrix<numericalType>::isColumnVector(numericalType* vec, const size_t& siz
 template<typename numericalType>
 bool Matrix<numericalType>::isRowVector(const vector<numericalType>& vec) const
 {
-	if (vec.size() != _row)
+	if (vec.size() != _col)
 		throw std::runtime_error("Cannot compare rows, vector size doesnt match!");
 
 	// Check if the row is 1:1 
@@ -2228,7 +2245,7 @@ bool Matrix<numericalType>::isRowVector(numericalType* vec, const size_t& size) 
 template<typename numericalType>
 bool Matrix<numericalType>::isLinearlyIndependent(const size_t& row1Idx, const size_t& row2Idx) const
 {
-	if (row1Idx >= _row || row2Idx >= _row)
+	if ( isRowIdxOutOfBound(row1Idx) || isRowIdxOutOfBound(row2Idx) )
 		throw std::runtime_error("Cannot determine linear independency, row index out of bounds!");
 
 	return isLinearlyIndependent(matrix[row1Idx], _col, matrix[row2Idx], _col);
@@ -2239,7 +2256,7 @@ bool Matrix<numericalType>::isLinearlyIndependent(numericalType* row, const size
 {
 	if (size != _col)
 		throw std::runtime_error("Cannot determine linear independency of different size vectors!");
-	if (rowIdx >= _row)
+	if ( isRowIdxOutOfBound(rowIdx) )
 		throw std::runtime_error("Cannot determine linear independency, row index out of bounds!");
 
 	return isLinearlyIndependent(row, size, matrix[rowIdx], _col);
@@ -2250,7 +2267,7 @@ bool Matrix<numericalType>::isLinearlyIndependent(const vector<numericalType>& r
 {
 	if (row.size() != _col)
 		throw std::runtime_error("Cannot determine linear independency of different size vectors!");
-	if (rowIdx >= _row)
+	if ( isRowIdxOutOfBound(rowIdx) )
 		throw std::runtime_error("Cannot determine linear independency, row index out of bounds!");
 
 	numericalType* row2 = matrix[rowIdx];
@@ -2577,7 +2594,7 @@ numericalType Matrix<numericalType>::mean() const
 template<typename numericalType>
 numericalType Matrix<numericalType>::meanRow(const size_t& rowIdx) const
 {
-	if (rowIdx > _row)
+	if ( isRowIdxOutOfBound(rowIdx) )
 		throw std::runtime_error("Cannot calulate mean for row, since index is out of bounds!");
 
 	if (_row == 0)
@@ -2597,7 +2614,7 @@ numericalType Matrix<numericalType>::meanRow(const size_t& rowIdx) const
 template<typename numericalType>
 numericalType Matrix<numericalType>::meanCol(const size_t& colIdx) const
 {
-	if (colIdx > _col)
+	if ( isColIdxOutOfBound(colIdx) )
 		throw std::runtime_error("Cannot calulate mean for col, since index is out of bounds!");
 
 	if (_col <= 0)
@@ -3216,7 +3233,7 @@ Matrix<numericalType> Matrix<numericalType>::reshape(const Matrix<numericalType>
 	size_t newSize = reshapedMatrix.size();
 
 	if (oldSize != newSize)
-		throw std::runtime_error("Canno treshape matrix, information will be lost!");
+		throw std::runtime_error("Cannot reshape matrix, information will be lost!");
 
 	size_t rwIdx = 0;
 	size_t clIdx = 0;
