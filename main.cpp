@@ -2,6 +2,8 @@
 #include <iostream>
 #include <vector>
 
+extern int unitTests();
+
 int main() {
     try {
         // Matrix Creation
@@ -142,6 +144,9 @@ int main() {
 
         Matrix<double> scaled = reshaped.scale(7.0, 3.0);
         scaled.printToStdOut();
+
+
+        unitTests();
     }
     catch (const std::exception& e) {
         std::cerr << "An exception occurred: " << e.what() << std::endl;
