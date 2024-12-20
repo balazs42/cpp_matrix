@@ -1983,9 +1983,94 @@ bool Matrix<numericalType>::canBeDiagonalized() const
 }
 
 template<typename numericalType>
+vector<numericalType> Matrix<numericalType>::singularvaluesVector(int maxIterations, numericalType tol) const
+{
+	if (!isSquare())
+		throw std::runtime_error("Matrix must be square to compute singular-values.");
+
+	// Step 1: Compute A^T
+	Matrix<numericalType> At = this->transpose();
+
+	// Step 2: Compute A^TA
+	Matrix<numericalType> AtA = At * (*this);
+
+	// Step 3: get eignevalues of A^TA
+	vector<numericalType> singularValVector = AtA.eigenvaluesVector();
+
+	// Step 4: get +ve square root of each eigen value of A^TA
+	for (unsigned i = 0; i < _row; i++)
+	{
+		singularValVector[i] = static_cast<numericalType>(std::sqrt(singularValVector[i]));
+	}
+
+	return singularValVector;
+}
+
+template<typename numericalType>
+numericalType* Matrix<numericalType>::singularvalues(int maxIterations, numericalType tol) const
+{
+	vector<numericalType> retVec = singularvaluesVector(maxIterations, tol);
+
+	// Copiing each element
+	numericalType* ret = new numericalType[_row];
+
+#ifdef _USING_OMP_
+#pragma omp parallel for
+#endif
+	for (unsigned i = 0; i < _row; i++)
+		ret[i] = retVec[i];
+
+	return ret;
+}
+
+template<typename numericalType>
 void Matrix<numericalType>::applySVD(Matrix<numericalType>& U, Matrix<numericalType>& Sigma, Matrix<numericalType>& VT) const
 {
+	if (!isSquare())
+		throw std::runtime_error("Cannot perform SVD decomposition on non-square matrix!");
 
+	unsigned n = _row;
+	U = Matrix<numericalType>(n, n);
+	Sigma = Matrix<numericalType>(n, n);
+	VT = Matrix<numericalType>(n, n);
+
+	// Step 1: Compute A^T
+	Matrix<numericalType> At = this->transpose();
+
+	// Step 2: Compute A^TA
+	Matrix<numericalType> AtA = At * (*this);
+
+	// Step 3: get eignevalues of A^TA
+	vector<numericalType> eigValVector = AtA.eigenvaluesVector();
+
+	// Step 4: get eignevectors of A^TA
+	Matrix<numericalType> eigVector = AtA.eigenvectors();
+
+	// Sigma := Diagonal entries of Sigma are singular values of the matrix in non-increasing order
+	// V := cols are unit eigenvectors of A^TA
+	// VT := rows are unit eigenvectors of A^TA
+	// U := cols are ui = (1/sigma_i)(A)(cols of V) = (1/sigma_i)(A)(vi)
+	Sigma.setToIdentity();
+	VT.setToZeroMatrix();
+	U.setToZeroMatrix();
+	for (unsigned i = 0; i < n; i++)
+	{
+		Sigma[i][i] = static_cast<numericalType>(std::sqrt(eigValVector[i]));
+
+		// Normalize the result to make it a unit vector
+		numericalType norm = static_cast<numericalType>(std::sqrt(dotProduct(eigVector[i], eigVector[i]))); // dotProduct calculates the dot product of the vector with itself
+		for (auto &element : eigVector[i])
+			element /= norm;
+		
+		VT.setRow(eigVector[i],i);
+
+		U = A*(VT->transpose); // U = AV
+		for(unsigned i=0;i<n;i++) {
+			if(Sigma[i][i] != 0) {
+				U.scalarMultiplyCol(static_cast<double>(1)/Sigma[i][i], i)
+			}
+		}
+	}
 }
 
 template<typename numericalType>

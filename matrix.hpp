@@ -1041,6 +1041,21 @@ public:
 	// Returns: returns max{|eigenvalue|} = maximum of absoulte value(magnitude) of eigenvalues.
 	numericalType spectralRadius() const;
 
+	// singularvaluesVector: Calculates the singular-values of the matrix.
+	// Parameters:
+	// - maxIterations: Maximum number of iterations for the eigenvalue calculation algorithm.
+	// - tol: Tolerance for determining convergence of the algorithm.
+	// Returns: A vector of numericalType containing the singular-values of the matrix.
+	vector<numericalType> singularvaluesVector(int maxIterations = 1000, numericalType tol = 1e-9) const;
+
+	// singularvalues: Calculates the singular-values of the matrix.
+	// Parameters:
+	// - maxIterations: Maximum number of iterations for the eigenvalue calculation algorithm.
+	// - tol: Tolerance for determining convergence of the algorithm.
+	// Returns: A array of numericalType containing the singular-values of the matrix.
+	numericalType* singularvalues(int maxIterations = 1000, numericalType tol = 1e-9) const;
+
+
 	// characteristics: Computes the characteristic polynomial of the matrix. Calculated with using x(lambda) = det(A - lamdba * I).
 	// Parameters: None.
 	// Returns: A Matrix object representing the coefficients of the characteristic polynomial.
