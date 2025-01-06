@@ -1085,7 +1085,7 @@ numericalType Matrix<numericalType>::determinant() const
 		throw std::runtime_error("Determinant can only be calculated for square matrices.");
 	
 	// If the matirx is an upper triangle, then the product of the diagonal elements is the determinant
-	if (isUpperTriangle())
+	if (isUpperTriangle() || isLowerTriangle())
 	{
 		unsigned cntr = 0;
 		numericalType det = 1;
